@@ -23,7 +23,7 @@ import { Topic } from '../../shared/models';
       <mat-divider />
 
       <mat-list>
-        <mat-list-item *ngFor="let t of (topics$ | async) as list">
+        <mat-list-item *ngFor="let t of topics$ | async as list">
           <div matListItemTitle>{{ t.name }}</div>
           <div matListItemLine>{{ t.description || 'No description' }}</div>
           <div class="spacer"></div>
@@ -36,17 +36,31 @@ import { Topic } from '../../shared/models';
         </mat-list-item>
       </mat-list>
 
-      <p class="hint" *ngIf="(topics$ | async)?.length === 0">No topics yet. Use "Add Topic" to create one.</p>
+      <p class="hint" *ngIf="(topics$ | async)?.length === 0">
+        No topics yet. Use "Add Topic" to create one.
+      </p>
     </div>
   `,
   styles: [
     `
-    .container { padding: 16px; display: grid; gap: 12px; }
-    .header { display: flex; align-items: center; gap: 12px; }
-    .spacer { flex: 1 1 auto; }
-    .hint { opacity: 0.7; }
-    `
-  ]
+      .container {
+        padding: 16px;
+        display: grid;
+        gap: 12px;
+      }
+      .header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .spacer {
+        flex: 1 1 auto;
+      }
+      .hint {
+        opacity: 0.7;
+      }
+    `,
+  ],
 })
 export class TopicsListComponent {
   private readonly topics = inject(TopicsService);

@@ -15,7 +15,7 @@ import { Topic } from '../shared/models';
         <mat-form-field appearance="outline">
           <mat-label>Topic</mat-label>
           <mat-select [(value)]="selectedTopicId">
-            <mat-option *ngFor="let t of (topics$ | async)" [value]="t.id">{{ t.name }}</mat-option>
+            <mat-option *ngFor="let t of topics$ | async" [value]="t.id">{{ t.name }}</mat-option>
           </mat-select>
         </mat-form-field>
 
@@ -47,21 +47,61 @@ import { Topic } from '../shared/models';
   `,
   styles: [
     `
-    .container { padding: 16px; }
-    .controls { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 16px; }
-    .print-page { background: white; color: black; padding: 16mm; width: 210mm; min-height: 297mm; box-shadow: 0 0 0.5mm rgba(0,0,0,0.1); }
-    .title { text-align: center; margin-bottom: 12mm; }
-    .images { display: grid; grid-template-columns: 1fr 1fr; gap: 8mm; }
-    .img img { width: 100%; height: auto; display: block; }
-    .caption { margin-top: 2mm; font-size: 12pt; text-align: center; }
+      .container {
+        padding: 16px;
+      }
+      .controls {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        flex-wrap: wrap;
+        margin-bottom: 16px;
+      }
+      .print-page {
+        background: white;
+        color: black;
+        padding: 16mm;
+        width: 210mm;
+        min-height: 297mm;
+        box-shadow: 0 0 0.5mm rgba(0, 0, 0, 0.1);
+      }
+      .title {
+        text-align: center;
+        margin-bottom: 12mm;
+      }
+      .images {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8mm;
+      }
+      .img img {
+        width: 100%;
+        height: auto;
+        display: block;
+      }
+      .caption {
+        margin-top: 2mm;
+        font-size: 12pt;
+        text-align: center;
+      }
 
-    @media print {
-      .no-print { display: none !important; }
-      .print-page { box-shadow: none; padding: 10mm; width: auto; min-height: auto; }
-      @page { size: A4; margin: 10mm; }
-    }
-    `
-  ]
+      @media print {
+        .no-print {
+          display: none !important;
+        }
+        .print-page {
+          box-shadow: none;
+          padding: 10mm;
+          width: auto;
+          min-height: auto;
+        }
+        @page {
+          size: A4;
+          margin: 10mm;
+        }
+      }
+    `,
+  ],
 })
 export class PrintComponent {
   private readonly topics = inject(TopicsService);

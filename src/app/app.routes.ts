@@ -11,9 +11,20 @@ export const routes: Routes = [
     canActivate: [authGuard],
     children: [
       { path: '', pathMatch: 'full', redirectTo: 'topics' },
-      { path: 'topics', loadComponent: () => import('./topics/list/topics-list.component').then(m => m.TopicsListComponent) },
-      { path: 'topics/:id/edit', loadComponent: () => import('./topics/editor/topic-editor.component').then(m => m.TopicEditorComponent) },
-      { path: 'print', loadComponent: () => import('./print/print.component').then(m => m.PrintComponent) },
+      {
+        path: 'topics',
+        loadComponent: () =>
+          import('./topics/list/topics-list.component').then((m) => m.TopicsListComponent),
+      },
+      {
+        path: 'topics/:id/edit',
+        loadComponent: () =>
+          import('./topics/editor/topic-editor.component').then((m) => m.TopicEditorComponent),
+      },
+      {
+        path: 'print',
+        loadComponent: () => import('./print/print.component').then((m) => m.PrintComponent),
+      },
       { path: '**', redirectTo: '' },
     ],
   },
