@@ -1,11 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import {
-  Firestore,
-  collection,
-  collectionData,
-  doc,
-  docData,
-} from '@angular/fire/firestore';
+import { Firestore, collection, collectionData, doc, docData } from '@angular/fire/firestore';
 import {
   runTransaction,
   serverTimestamp,
@@ -93,11 +87,7 @@ export class TopicsService {
     await deleteDoc(ref);
   }
 
-  async uploadImage(
-    topicId: string,
-    file: File,
-    titles: LocalizedTitles
-  ): Promise<ImageMeta> {
+  async uploadImage(topicId: string, file: File, titles: LocalizedTitles): Promise<ImageMeta> {
     if (!ALLOWED_MIME.includes(file.type)) {
       throw new Error('Unsupported file type');
     }
