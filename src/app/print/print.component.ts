@@ -1,9 +1,9 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MATERIAL_IMPORTS } from '../shared/material.imports';
 import { TopicsService } from '../services/topics.service';
 import { AsyncPipe } from '@angular/common';
-import { Topic } from '../shared/models';
+import { Topic, ImageMeta } from '../shared/models';
 
 @Component({
   standalone: true,
@@ -121,7 +121,7 @@ export class PrintComponent {
     });
   }
 
-  getTitle(img: any): string {
+  getTitle(img: ImageMeta): string {
     return (img?.titles?.[this.lang] || '').trim();
   }
 

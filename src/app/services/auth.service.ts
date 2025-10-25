@@ -8,9 +8,9 @@ export class AuthService {
   private readonly auth = inject(Auth);
 
   readonly user$: Observable<User | null> = authState(this.auth);
-  readonly isLoggedIn$: Observable<boolean> = this.user$.pipe(map((u) => !!u));
+  readonly isLoggedIn$: Observable<boolean> = this.user$.pipe(map((u) => u !== null));
   readonly isAdmin$: Observable<boolean> = this.user$.pipe(
-    map((u) => !!u && (!!environment.adminEmail ? u.email === environment.adminEmail : true))
+    map((u) => !!u && (!environment.adminEmail || u.email === environment.adminEmail))
   );
 
   login(email: string, password: string) {

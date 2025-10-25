@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -233,7 +233,7 @@ export class TopicEditorComponent implements OnInit, OnDestroy {
     try {
       await this.topics.update(id, this.form.getRawValue());
       this.snack.open('Topic saved', 'OK', { duration: 1500 });
-    } catch (e) {
+    } catch {
       this.snack.open('Failed to save topic', 'Dismiss', { duration: 3000 });
     } finally {
       this.saving = false;
@@ -251,8 +251,9 @@ export class TopicEditorComponent implements OnInit, OnDestroy {
       const titles: LocalizedTitles = { en: '', cs: '', es: '' };
       await this.topics.uploadImage(id, file, titles);
       this.snack.open('Image uploaded', 'OK', { duration: 1500 });
-    } catch (e: any) {
-      this.snack.open(e?.message || 'Upload failed', 'Dismiss', { duration: 3000 });
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : 'Upload failed';
+      this.snack.open(msg, 'Dismiss', { duration: 3000 });
     } finally {
       this.uploading = false;
       (event.target as HTMLInputElement).value = '';

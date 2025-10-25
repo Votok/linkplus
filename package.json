@@ -7,7 +7,14 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "lint": "ng lint"
+    "lint": "ng lint",
+    "firebase:login": "npx firebase login",
+    "firebase:whoami": "npx firebase whoami",
+    "deploy": "npm run build && npx firebase deploy --only hosting",
+    "deploy:all": "npm run build && npx firebase deploy --only hosting,firestore:rules,storage",
+    "deploy:rules": "npx firebase deploy --only firestore:rules,storage",
+    "deploy:preview": "npm run build && npx firebase hosting:channel:deploy",
+    "emulators:start": "npx firebase emulators:start"
   },
   "prettier": {
     "printWidth": 100,

@@ -2,7 +2,7 @@ import { CanActivateFn, Router } from '@angular/router';
 import { inject } from '@angular/core';
 import { Auth, authState } from '@angular/fire/auth';
 import { environment } from '../../environments/environment';
-import { firstValueFrom, map, take } from 'rxjs';
+import { firstValueFrom, take } from 'rxjs';
 
 export const authGuard: CanActivateFn = async () => {
   const auth = inject(Auth);

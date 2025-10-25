@@ -98,8 +98,10 @@ export class LoginComponent {
       await this.auth.login(email, password);
       await this.router.navigateByUrl('/');
       this.snack.open('Signed in', 'OK', { duration: 2000 });
-    } catch (e: any) {
-      const msg = this.errorMessage(e?.code) ?? 'Login failed';
+    } catch (e: unknown) {
+      const code =
+        typeof e === 'object' && e && 'code' in e ? (e as { code?: string }).code : undefined;
+      const msg = this.errorMessage(code) ?? 'Login failed';
       this.snack.open(msg, 'Dismiss', { duration: 4000 });
     } finally {
       this.loading = false;

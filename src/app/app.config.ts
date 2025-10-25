@@ -32,22 +32,29 @@ export const appConfig: ApplicationConfig = {
       provide: APP_INITIALIZER,
       multi: true,
       useFactory: () => () => {
-        if (!environment.production && (environment as any).useEmulators) {
+        interface Emulator {
+          host: string;
+          port: number;
+        }
+        interface DevEnv {
+          useEmulators?: boolean;
+          emulators?: { auth?: Emulator; firestore?: Emulator; storage?: Emulator };
+        }
+        const dev = environment as unknown as DevEnv;
+        if (!environment.production && dev.useEmulators) {
           const auth: Auth = getAuth();
           const db: Firestore = getFirestore();
           const storage: FirebaseStorage = getStorage();
 
           try {
-            const { auth: a, firestore: f, storage: s } = (environment as any).emulators || {};
+            const { auth: a, firestore: f, storage: s } = dev.emulators || {};
             if (a && f && s) {
               connectAuthEmulator(auth, `http://${a.host}:${a.port}`, { disableWarnings: true });
               connectFirestoreEmulator(db, f.host, f.port);
               connectStorageEmulator(storage, s.host, s.port);
-              // eslint-disable-next-line no-console
               console.info('[Firebase] Connected to local emulators');
             }
           } catch (e) {
-            // eslint-disable-next-line no-console
             console.warn('[Firebase] Emulator connection skipped or failed:', e);
           }
         }

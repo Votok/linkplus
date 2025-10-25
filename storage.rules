@@ -1,0 +1,30 @@
+rules_version = '2';
+
+/**
+ * Admin-only Cloud Storage rules
+ * - Replace ADMIN_EMAIL below with your real admin email (must match the account used to sign in)
+ * - Allows only images (jpeg|png|webp) up to 10MB, and only for the admin
+ */
+function isAdmin() {
+  return request.auth != null && request.auth.token.email == 'admin@example.com'; // TODO: change this email
+}
+
+function isAllowedImage() {
+  return request.resource != null
+    && request.resource.size < 10 * 1024 * 1024
+    && request.resource.contentType.matches('image\\/(jpeg|png|webp)');
+}
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Images under topics/{topicId}/images/{imageId}.{ext}
+    match /topics/{topicId}/images/{filePath=**} {
+      allow read, write: if isAdmin() && (request.method == 'get' || isAllowedImage());
+    }
+
+    // Fallback: admin-only read/write
+    match /{allPaths=**} {
+      allow read, write: if isAdmin();
+    }
+  }
+}

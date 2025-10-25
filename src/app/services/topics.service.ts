@@ -8,7 +8,7 @@ import {
   deleteDoc,
   getDoc,
 } from 'firebase/firestore';
-import { Observable, firstValueFrom } from 'rxjs';
+import { Observable } from 'rxjs';
 import { Topic, ImageMeta, LocalizedTitles } from '../shared/models';
 import { Storage } from '@angular/fire/storage';
 import { ref, uploadBytesResumable, getDownloadURL, deleteObject } from 'firebase/storage';
@@ -28,9 +28,12 @@ function getExtFromFile(file: File): string {
 
 function newId(): string {
   // Prefer crypto.randomUUID when available
-  const g: any = globalThis as any;
-  if (g && g.crypto && typeof g.crypto.randomUUID === 'function') {
-    return g.crypto.randomUUID();
+  try {
+    if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
+      return (crypto as Crypto & { randomUUID: () => string }).randomUUID();
+    }
+  } catch {
+    // ignore
   }
   return Math.random().toString(36).slice(2);
 }
@@ -67,8 +70,8 @@ export class TopicsService {
   }
 
   async update(id: string, patch: Partial<Omit<Topic, 'id' | 'createdAt'>>): Promise<void> {
-    const ref = doc(this.db, TOPICS_COLLECTION, id);
-    await updateDoc(ref, { ...patch, updatedAt: serverTimestamp() } as any);
+    const refDoc = doc(this.db, TOPICS_COLLECTION, id);
+    await setDoc(refDoc, { ...patch, updatedAt: serverTimestamp() }, { merge: true });
   }
 
   async remove(id: string): Promise<void> {
@@ -121,14 +124,13 @@ export class TopicsService {
       });
       const url = await getDownloadURL(sref);
 
-      const meta: ImageMeta = {
+      const meta: Omit<ImageMeta, 'createdAt'> = {
         id: imageId,
         path,
         url,
         titles,
         mime: file.type,
         size: file.size,
-        createdAt: serverTimestamp() as any,
       };
 
       current.push(meta);

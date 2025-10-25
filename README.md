@@ -42,6 +42,12 @@ export const environment = {
 
 The app reads these values in `src/app/app.config.ts` during Firebase initialization.
 
+### 2.1 Enable Auth and create the admin user
+
+- In Firebase Console → Build → Authentication → Sign-in method, enable Email/Password
+- In Users, create the admin user with the email you plan to use
+- Make sure `adminEmail` in your environment files and in the rules files matches this email
+
 ## 3) Development server
 
 To start a local development server, run:
@@ -75,6 +81,63 @@ npm run build
 ```
 
 Build artifacts are stored in the `dist/` directory. Production builds are optimized for performance and speed.
+
+## 5) Firebase Hosting and Deploy
+
+Before deploying, set your Firebase project ID in `.firebaserc`:
+
+- Open `.firebaserc` and replace `YOUR_FIREBASE_PROJECT_ID` with your actual project ID
+  (from Firebase Console → Project settings → General → Project ID).
+
+Authenticate and verify the active account:
+
+```bash
+npm run firebase:login
+npm run firebase:whoami
+```
+
+Deploy to Firebase Hosting (builds the app first):
+
+```bash
+npm run deploy
+```
+
+Optional: Create a temporary preview URL (great for reviews):
+
+```bash
+npm run deploy:preview
+```
+
+### Firestore and Storage security rules (admin-only)
+
+This app is intended for a single admin user. The repository includes:
+
+- `firestore.rules` – restricts all reads/writes to the admin email
+- `storage.rules` – restricts uploads/deletes to the admin email and images up to 10MB (`jpeg|png|webp`)
+
+Update the admin email in both rules files to match your real admin account:
+
+```text
+// In firestore.rules and storage.rules
+// Replace admin@example.com with your admin email
+```
+
+To deploy rules along with hosting, you can run:
+
+```bash
+npm run deploy:all
+```
+
+### Using local Firebase emulators (optional)
+
+- In `src/environments/environment.development.ts` set `useEmulators: true`
+- Start emulators locally:
+
+```bash
+npm run emulators:start
+```
+
+The app is already configured to connect to the emulators when `useEmulators` is enabled.
 
 ## Running unit tests
 
