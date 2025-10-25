@@ -9,6 +9,7 @@ npm install
 ```
 
 ## 2) Add Firebase configuration
+
 Create the following files and replace placeholders with your Firebase Web App config values from the Firebase console (Project settings → General → Your apps → Web app → SDK setup and configuration):
 
 - `src/environments/environment.development.ts` (used for `ng serve` / development)
@@ -18,24 +19,24 @@ Example structure (replace the placeholder strings):
 
 ```ts
 export const environment = {
-	production: false, // true in environment.ts
-	firebase: {
-		apiKey: 'YOUR_API_KEY',
-		authDomain: 'YOUR_PROJECT_ID.firebaseapp.com',
-		projectId: 'YOUR_PROJECT_ID',
-		storageBucket: 'YOUR_PROJECT_ID.appspot.com',
-		messagingSenderId: 'YOUR_SENDER_ID',
-		appId: 'YOUR_APP_ID'
-	},
-	// The single admin account that can access the app
-	adminEmail: 'admin@example.com',
-	// Optional: use Firebase emulators locally
-	useEmulators: false,
-	emulators: {
-		auth: { host: 'localhost', port: 9099 },
-		firestore: { host: 'localhost', port: 8080 },
-		storage: { host: 'localhost', port: 9199 }
-	}
+  production: false, // true in environment.ts
+  firebase: {
+    apiKey: 'YOUR_API_KEY',
+    authDomain: 'YOUR_PROJECT_ID.firebaseapp.com',
+    projectId: 'YOUR_PROJECT_ID',
+    storageBucket: 'YOUR_PROJECT_ID.appspot.com',
+    messagingSenderId: 'YOUR_SENDER_ID',
+    appId: 'YOUR_APP_ID',
+  },
+  // The single admin account that can access the app
+  adminEmail: 'admin@example.com',
+  // Optional: use Firebase emulators locally
+  useEmulators: false,
+  emulators: {
+    auth: { host: 'localhost', port: 9099 },
+    firestore: { host: 'localhost', port: 8080 },
+    storage: { host: 'localhost', port: 9199 },
+  },
 } as const;
 ```
 
