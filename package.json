@@ -8,6 +8,8 @@
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "lint": "ng lint",
+    "format": "npx -y prettier . --check",
+    "format:write": "npx -y prettier . --write",
     "firebase:login": "npx -y firebase-tools login",
     "firebase:whoami": "npx -y firebase-tools whoami",
     "firebase:version": "npx -y firebase-tools --version",

@@ -1,0 +1,21 @@
+# Normalize line endings to LF in the repo
+* text=auto eol=lf
+
+# Ensure common text files always use LF
+*.ts text eol=lf
+*.tsx text eol=lf
+*.js text eol=lf
+*.jsx text eol=lf
+*.html text eol=lf
+*.scss text eol=lf
+*.css text eol=lf
+*.md text eol=lf
+*.json text eol=lf
+
+# Keep images/binaries as-is
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.ico binary
