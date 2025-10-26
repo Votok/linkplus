@@ -73,6 +73,7 @@ import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-
           cdkDropList
           [cdkDropListData]="t.images"
           [cdkDropListDisabled]="uploading || deleting || saving || reordering"
+          cdkDropListOrientation="horizontal"
           (cdkDropListDropped)="dropImages($event)"
         >
           @for (img of t.images; track img.id) {
@@ -110,6 +111,19 @@ import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-
                 </button>
               </div>
             </div>
+
+            <ng-template cdkDragPlaceholder>
+              <div class="card placeholder">
+                <div class="ph-image"></div>
+                <div class="ph-fields"></div>
+              </div>
+            </ng-template>
+
+            <ng-template cdkDragPreview>
+              <div class="card preview">
+                <img [src]="img.url" [alt]="img.titles.en || 'image'" />
+              </div>
+            </ng-template>
           </div>
           }
         </div>
@@ -162,9 +176,10 @@ import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-
         gap: 12px;
       }
       .grid {
-        display: grid;
+        display: flex;
+        flex-wrap: wrap;
         gap: 16px;
-        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        align-items: stretch;
       }
       .card {
         border: 1px solid rgba(0, 0, 0, 0.12);
@@ -173,6 +188,22 @@ import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-
         background: white;
         display: grid;
         cursor: grab;
+        /* Treat items as one long row that wraps */
+        flex: 0 1 280px;
+        min-width: 280px;
+      }
+      .card.preview {
+        width: 100%;
+      }
+      .card.placeholder {
+        border: 2px dashed var(--mdc-theme-primary, #3f51b5);
+        background: rgba(63, 81, 181, 0.06);
+      }
+      .card.placeholder .ph-image {
+        height: 180px;
+      }
+      .card.placeholder .ph-fields {
+        height: 120px;
       }
       .cdk-drag-dragging {
         cursor: grabbing;
@@ -202,12 +233,6 @@ import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-
       .cdk-drag-preview {
         box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
         border-radius: 12px;
-      }
-      .cdk-drag-placeholder {
-        border: 2px dashed var(--mdc-theme-primary, #3f51b5);
-        background: rgba(63, 81, 181, 0.06);
-        border-radius: 12px;
-        min-height: 180px;
       }
     `,
   ],
