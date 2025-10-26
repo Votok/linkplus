@@ -188,9 +188,13 @@ import {
       }
       .grid {
         display: flex;
-        flex-wrap: wrap;
+        flex-wrap: nowrap; /* keep a single row */
         gap: 16px;
         align-items: stretch;
+        overflow-x: auto;
+        overscroll-behavior-x: contain;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 4px; /* space for scrollbar on some platforms */
       }
       .card {
         border: 1px solid rgba(0, 0, 0, 0.12);
@@ -199,9 +203,9 @@ import {
         background: white;
         display: grid;
         cursor: grab;
-        /* Treat items as one long row that wraps */
-        flex: 0 1 280px;
-        min-width: 280px;
+        /* Fixed item width in a single-row scroller */
+        flex: 0 0 280px;
+        width: 280px;
       }
       .card.preview {
         /* width controlled dynamically during drag */
