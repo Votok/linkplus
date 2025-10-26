@@ -28,6 +28,9 @@ import { Topic } from '../../shared/models';
           <div matListItemTitle>{{ t.name }}</div>
           <!-- <div matListItemLine>{{ t.description || 'No description' }}</div> -->
           <div matListItemMeta class="actions">
+            <button mat-icon-button [routerLink]="['/print']" [queryParams]="{ topic: t.id }" aria-label="Print">
+              <mat-icon>print</mat-icon>
+            </button>
             <button mat-icon-button [routerLink]="['/topics', t.id, 'edit']" aria-label="Edit">
               <mat-icon>edit</mat-icon>
             </button>

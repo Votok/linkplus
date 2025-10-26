@@ -1,9 +1,10 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MATERIAL_IMPORTS } from '../shared/material.imports';
 import { TopicsService } from '../services/topics.service';
 import { AsyncPipe } from '@angular/common';
 import { Topic, ImageMeta } from '../shared/models';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   standalone: true,
@@ -14,7 +15,7 @@ import { Topic, ImageMeta } from '../shared/models';
       <div class="controls no-print">
         <mat-form-field appearance="outline">
           <mat-label>Topic</mat-label>
-          <mat-select [(value)]="selectedTopicId">
+          <mat-select [value]="selectedTopicId()" (valueChange)="onTopicSelectionChange($event)">
             @for (t of topics$ | async; track t.id) {
             <mat-option [value]="t.id">{{ t.name }}</mat-option>
             }
@@ -111,20 +112,33 @@ import { Topic, ImageMeta } from '../shared/models';
 })
 export class PrintComponent {
   private readonly topics = inject(TopicsService);
-
-  selectedTopicId: string | null = null;
-  lang: 'en' | 'cs' | 'es' = 'en';
+  private readonly route = inject(ActivatedRoute);
 
   readonly topics$ = this.topics.list$();
-  readonly currentTopic = signal<Topic | null>(null);
+  readonly topicsList = signal<Topic[]>([]);
+
+  selectedTopicId = signal<string | null>(null);
+  lang: 'en' | 'cs' | 'es' = 'en';
+
+  readonly currentTopic = computed<Topic | null>(() => {
+    const id = this.selectedTopicId();
+    return this.topicsList().find((t) => t.id === id) ?? null;
+  });
 
   constructor() {
+    const qpId = this.route.snapshot.queryParamMap.get('topic');
+    if (qpId) this.selectedTopicId.set(qpId);
+
     this.topics$.subscribe((list) => {
-      if (!this.selectedTopicId && list.length) {
-        this.selectedTopicId = list[0].id;
+      this.topicsList.set(list);
+      if (!this.selectedTopicId() && list.length) {
+        this.selectedTopicId.set(list[0].id);
       }
-      this.currentTopic.set(list.find((t) => t.id === this.selectedTopicId) || null);
     });
+  }
+
+  onTopicSelectionChange(id: string) {
+    this.selectedTopicId.set(id);
   }
 
   getTitle(img: ImageMeta): string {
