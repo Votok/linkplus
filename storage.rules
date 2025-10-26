@@ -6,7 +6,7 @@ rules_version = '2';
  * - Allows only images (jpeg|png|webp) up to 10MB, and only for the admin
  */
 function isAdmin() {
-  return request.auth != null && request.auth.token.email == 'admin@example.com'; // TODO: change this email
+  return request.auth != null && request.auth.token.email == 'votocek@gmail.com';
 }
 
 function isAllowedImage() {

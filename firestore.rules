@@ -6,7 +6,7 @@ rules_version = '2';
  * - This setup denies all access unless the authenticated user's email matches ADMIN_EMAIL
  */
 function isAdmin() {
-  return request.auth != null && request.auth.token.email == 'admin@example.com'; // TODO: change this email
+  return request.auth != null && request.auth.token.email == 'votocek@gmail.com';
 }
 
 service cloud.firestore {
