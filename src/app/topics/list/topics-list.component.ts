@@ -27,13 +27,14 @@ import { Topic } from '../../shared/models';
         <mat-list-item>
           <div matListItemTitle>{{ t.name }}</div>
           <!-- <div matListItemLine>{{ t.description || 'No description' }}</div> -->
-          <div class="spacer"></div>
-          <button mat-icon-button [routerLink]="['/topics', t.id, 'edit']" aria-label="Edit">
-            <mat-icon>edit</mat-icon>
-          </button>
-          <button mat-icon-button color="warn" (click)="deleteTopic(t)" aria-label="Delete">
-            <mat-icon>delete</mat-icon>
-          </button>
+          <div matListItemMeta class="actions">
+            <button mat-icon-button [routerLink]="['/topics', t.id, 'edit']" aria-label="Edit">
+              <mat-icon>edit</mat-icon>
+            </button>
+            <button mat-icon-button color="warn" (click)="deleteTopic(t)" aria-label="Delete">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </div>
         </mat-list-item>
         }
       </mat-list>
@@ -57,6 +58,11 @@ import { Topic } from '../../shared/models';
       }
       .spacer {
         flex: 1 1 auto;
+      }
+      .actions {
+        display: inline-flex;
+        gap: 8px;
+        align-items: center;
       }
       .hint {
         opacity: 0.7;
