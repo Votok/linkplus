@@ -93,6 +93,10 @@ import { ActivatedRoute } from '@angular/router';
       }
 
       @media print {
+        /* Remove outer container padding so content fits exactly one page */
+        .container {
+          padding: 0 !important;
+        }
         .no-print {
           display: none !important;
         }
