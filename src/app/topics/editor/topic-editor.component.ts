@@ -8,7 +8,13 @@ import { ImageMeta, LocalizedTitles, Topic } from '../../shared/models';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Subscription } from 'rxjs';
 import { MarkdownModule, MarkdownComponent } from 'ngx-markdown';
-import { CdkDragDrop, CdkDragStart, CdkDragEnd, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
+import {
+  CdkDragDrop,
+  CdkDragStart,
+  CdkDragEnd,
+  DragDropModule,
+  moveItemInArray,
+} from '@angular/cdk/drag-drop';
 
 @Component({
   standalone: true,
@@ -77,7 +83,12 @@ import { CdkDragDrop, CdkDragStart, CdkDragEnd, DragDropModule, moveItemInArray 
           (cdkDropListDropped)="dropImages($event)"
         >
           @for (img of t.images; track img.id) {
-          <div class="card" cdkDrag (cdkDragStarted)="onDragStart($event)" (cdkDragEnded)="onDragEnd()">
+          <div
+            class="card"
+            cdkDrag
+            (cdkDragStarted)="onDragStart($event)"
+            (cdkDragEnded)="onDragEnd()"
+          >
             <img [src]="img.url" [alt]="img.titles.en || 'image'" />
             <div class="img-fields">
               <mat-form-field appearance="outline">
