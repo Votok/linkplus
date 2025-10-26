@@ -8,6 +8,7 @@ import { ImageMeta, LocalizedTitles, Topic } from '../../shared/models';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Subscription } from 'rxjs';
 import { MarkdownModule, MarkdownComponent } from 'ngx-markdown';
+import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
 
 @Component({
   standalone: true,
@@ -18,6 +19,7 @@ import { MarkdownModule, MarkdownComponent } from 'ngx-markdown';
     RouterLink,
     MarkdownModule,
     MarkdownComponent,
+    DragDropModule,
     ...MATERIAL_IMPORTS,
   ],
   template: `
@@ -66,9 +68,15 @@ import { MarkdownModule, MarkdownComponent } from 'ngx-markdown';
           (change)="onFileSelected($event)"
           [disabled]="uploading || t.images.length >= 10"
         />
-        <div class="grid">
+        <div
+          class="grid"
+          cdkDropList
+          [cdkDropListData]="t.images"
+          [cdkDropListDisabled]="uploading || deleting || saving || reordering"
+          (cdkDropListDropped)="dropImages($event)"
+        >
           @for (img of t.images; track img.id) {
-          <div class="card">
+          <div class="card" cdkDrag>
             <img [src]="img.url" [alt]="img.titles.en || 'image'" />
             <div class="img-fields">
               <mat-form-field appearance="outline">
@@ -164,6 +172,10 @@ import { MarkdownModule, MarkdownComponent } from 'ngx-markdown';
         overflow: hidden;
         background: white;
         display: grid;
+        cursor: grab;
+      }
+      .cdk-drag-dragging {
+        cursor: grabbing;
       }
       img {
         width: 100%;
@@ -185,6 +197,18 @@ import { MarkdownModule, MarkdownComponent } from 'ngx-markdown';
         display: grid;
         place-items: center;
       }
+
+      /* Drag & drop visuals */
+      .cdk-drag-preview {
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        border-radius: 12px;
+      }
+      .cdk-drag-placeholder {
+        border: 2px dashed var(--mdc-theme-primary, #3f51b5);
+        background: rgba(63, 81, 181, 0.06);
+        border-radius: 12px;
+        min-height: 180px;
+      }
     `,
   ],
 })
@@ -201,6 +225,8 @@ export class TopicEditorComponent implements OnInit, OnDestroy {
   readonly topic = signal<Topic | null>(null);
   saving = false;
   uploading = false;
+  reordering = false;
+  deleting = false;
 
   readonly form = this.fb.nonNullable.group({
     name: ['', Validators.required],
@@ -277,7 +303,42 @@ export class TopicEditorComponent implements OnInit, OnDestroy {
     if (!id) return;
     const yes = confirm('Remove this image?');
     if (!yes) return;
-    await this.topics.deleteImage(id, img.id);
-    this.snack.open('Image removed', 'OK', { duration: 1500 });
+    this.deleting = true;
+    try {
+      await this.topics.deleteImage(id, img.id);
+      this.snack.open('Image removed', 'OK', { duration: 1500 });
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : 'Failed to remove image';
+      this.snack.open(msg, 'Dismiss', { duration: 3000 });
+    } finally {
+      this.deleting = false;
+    }
+  }
+
+  async dropImages(event: CdkDragDrop<ImageMeta[]>) {
+    const id = this.id();
+    const t = this.topic();
+    if (!id || !t) return;
+    const { previousIndex, currentIndex } = event;
+    if (previousIndex === currentIndex) return;
+
+    const prevImages = (t.images || []).slice();
+    const nextImages = (t.images || []).slice();
+    moveItemInArray(nextImages, previousIndex, currentIndex);
+
+    // Optimistic update
+    this.reordering = true;
+    this.topic.set({ ...t, images: nextImages });
+    try {
+      await this.topics.update(id, { images: nextImages });
+      this.snack.open('Order saved', 'OK', { duration: 1000 });
+    } catch (e: unknown) {
+      // Revert on failure
+      this.topic.set({ ...t, images: prevImages });
+      const msg = e instanceof Error ? e.message : 'Failed to save order';
+      this.snack.open(msg, 'Dismiss', { duration: 3000 });
+    } finally {
+      this.reordering = false;
+    }
   }
 }
