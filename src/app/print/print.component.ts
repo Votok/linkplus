@@ -97,10 +97,68 @@ import { ActivatedRoute } from '@angular/router';
           display: none !important;
         }
         .print-page {
+          /* Print-specific page adjustments */
           box-shadow: none;
           padding: 10mm;
           width: auto;
           min-height: auto;
+          /* Reserve a predictable space for the title block (content height); bottom spacing is handled by .title margin */
+          --title-block: 10mm;
+        }
+
+        /* Smaller, tighter headline for print */
+        .print-page .title {
+          font-size: 14pt;
+          line-height: 1.2;
+          margin: 0 0 6mm;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          max-height: var(--title-block);
+        }
+
+        /* 2×4 grid per A4 page with table-like lines */
+        .print-page .images {
+          grid-template-columns: 1fr 1fr;
+          gap: 0; /* use borders as dividers instead of gaps */
+          border: 0.2mm solid #000; /* outer border */
+          box-sizing: border-box;
+          /* Four uniform rows that fill the printable height minus paddings, title block and borders */
+          grid-auto-rows: calc((100vh - 20mm - var(--title-block) - 6mm - 0.4mm) / 4);
+        }
+
+        .print-page .images > .img {
+          display: flex;
+          flex-direction: column;
+          box-sizing: border-box;
+          /* Avoid breaking a cell across pages */
+          break-inside: avoid;
+          page-break-inside: avoid;
+        }
+
+        /* Single vertical divider between the two columns */
+        .print-page .images > .img:nth-child(2n) {
+          border-left: 0.2mm solid #000;
+        }
+        /* Horizontal dividers between rows 1-2, 2-3, 3-4 */
+        .print-page .images > .img:not(:nth-child(-n + 2)) {
+          border-top: 0.2mm solid #000;
+        }
+
+        /* Image scales within fixed cell, caption keeps its size */
+        .print-page .images > .img img {
+          flex: 1 1 auto;
+          width: 100%;
+          height: 100%;
+          object-fit: contain;
+          min-height: 0;
+          display: block;
+        }
+        .print-page .caption {
+          font-size: 12pt; /* keep captions unchanged */
+          line-height: 1.2;
+          margin-top: 2mm;
+          text-align: center;
         }
         @page {
           size: A4;
