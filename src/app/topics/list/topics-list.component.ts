@@ -23,9 +23,10 @@ import { Topic } from '../../shared/models';
       <mat-divider />
 
       <mat-list>
-        <mat-list-item *ngFor="let t of topics$ | async as list">
+        @for (t of topics$ | async; track t.id) {
+        <mat-list-item>
           <div matListItemTitle>{{ t.name }}</div>
-          <div matListItemLine>{{ t.description || 'No description' }}</div>
+          <!-- <div matListItemLine>{{ t.description || 'No description' }}</div> -->
           <div class="spacer"></div>
           <button mat-icon-button [routerLink]="['/topics', t.id, 'edit']" aria-label="Edit">
             <mat-icon>edit</mat-icon>
@@ -34,11 +35,12 @@ import { Topic } from '../../shared/models';
             <mat-icon>delete</mat-icon>
           </button>
         </mat-list-item>
+        }
       </mat-list>
 
-      <p class="hint" *ngIf="(topics$ | async)?.length === 0">
-        No topics yet. Use "Add Topic" to create one.
-      </p>
+      @if ((topics$ | async)?.length === 0) {
+      <p class="hint">No topics yet. Use "Add Topic" to create one.</p>
+      }
     </div>
   `,
   styles: [

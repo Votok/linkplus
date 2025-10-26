@@ -15,7 +15,9 @@ import { Topic, ImageMeta } from '../shared/models';
         <mat-form-field appearance="outline">
           <mat-label>Topic</mat-label>
           <mat-select [(value)]="selectedTopicId">
-            <mat-option *ngFor="let t of topics$ | async" [value]="t.id">{{ t.name }}</mat-option>
+            @for (t of topics$ | async; track t.id) {
+            <mat-option [value]="t.id">{{ t.name }}</mat-option>
+            }
           </mat-select>
         </mat-form-field>
 
@@ -34,15 +36,19 @@ import { Topic, ImageMeta } from '../shared/models';
         </button>
       </div>
 
-      <div class="print-page" *ngIf="currentTopic() as topic">
+      @if (currentTopic(); as topic) {
+      <div class="print-page">
         <h1 class="title">{{ topic.name }}</h1>
         <div class="images">
-          <div class="img" *ngFor="let img of topic.images">
+          @for (img of topic.images; track img.id) {
+          <div class="img">
             <img [src]="img.url" [alt]="getTitle(img)" />
             <div class="caption">{{ getTitle(img) }}</div>
           </div>
+          }
         </div>
       </div>
+      }
     </div>
   `,
   styles: [

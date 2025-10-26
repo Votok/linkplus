@@ -21,10 +21,11 @@ import { MarkdownModule, MarkdownComponent } from 'ngx-markdown';
     ...MATERIAL_IMPORTS,
   ],
   template: `
-    <div class="container" *ngIf="topic(); else loadingTpl">
+    @if (topic(); as t) {
+    <div class="container">
       <div class="header">
         <h2>Edit Topic</h2>
-        <span class="topic-id">#{{ topic()?.id }}</span>
+        <span class="topic-id">#{{ t.id }}</span>
         <span class="spacer"></span>
         <a mat-stroked-button color="primary" [routerLink]="['/topics']">
           <mat-icon>arrow_back</mat-icon>
@@ -63,17 +64,18 @@ import { MarkdownModule, MarkdownComponent } from 'ngx-markdown';
           type="file"
           accept="image/jpeg,image/png,image/webp"
           (change)="onFileSelected($event)"
-          [disabled]="uploading || (topic()?.images?.length || 0) >= 10"
+          [disabled]="uploading || t.images.length >= 10"
         />
         <div class="grid">
-          <div class="card" *ngFor="let img of topic()?.images">
-            <img [src]="img.url" [alt]="img.titles?.en || 'image'" />
+          @for (img of t.images; track img.id) {
+          <div class="card">
+            <img [src]="img.url" [alt]="img.titles.en || 'image'" />
             <div class="img-fields">
               <mat-form-field appearance="outline">
                 <mat-label>Title (EN)</mat-label>
                 <input
                   matInput
-                  [value]="img.titles?.en || ''"
+                  [value]="img.titles.en || ''"
                   (change)="onTitleChange(img, 'en', $any($event.target).value)"
                 />
               </mat-form-field>
@@ -81,7 +83,7 @@ import { MarkdownModule, MarkdownComponent } from 'ngx-markdown';
                 <mat-label>Titulek (CS)</mat-label>
                 <input
                   matInput
-                  [value]="img.titles?.cs || ''"
+                  [value]="img.titles.cs || ''"
                   (change)="onTitleChange(img, 'cs', $any($event.target).value)"
                 />
               </mat-form-field>
@@ -89,7 +91,7 @@ import { MarkdownModule, MarkdownComponent } from 'ngx-markdown';
                 <mat-label>Título (ES)</mat-label>
                 <input
                   matInput
-                  [value]="img.titles?.es || ''"
+                  [value]="img.titles.es || ''"
                   (change)="onTitleChange(img, 'es', $any($event.target).value)"
                 />
               </mat-form-field>
@@ -101,15 +103,15 @@ import { MarkdownModule, MarkdownComponent } from 'ngx-markdown';
               </div>
             </div>
           </div>
+          }
         </div>
       </section>
     </div>
-
-    <ng-template #loadingTpl>
-      <div class="loading">
-        <mat-progress-spinner mode="indeterminate" diameter="36"></mat-progress-spinner>
-      </div>
-    </ng-template>
+    } @else {
+    <div class="loading">
+      <mat-progress-spinner mode="indeterminate" diameter="36"></mat-progress-spinner>
+    </div>
+    }
   `,
   styles: [
     `
