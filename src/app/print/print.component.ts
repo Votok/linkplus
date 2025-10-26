@@ -102,29 +102,23 @@ import { ActivatedRoute } from '@angular/router';
           padding: 10mm;
           width: auto;
           min-height: auto;
-          /* Reserve a predictable space for the title block (content height); bottom spacing is handled by .title margin */
-          --title-block: 10mm;
+          /* Title hidden in print, reserve no space */
+          --title-block: 0mm;
         }
 
-        /* Smaller, tighter headline for print */
+        /* Hide headline on printed page */
         .print-page .title {
-          font-size: 14pt;
-          line-height: 1.2;
-          margin: 0 0 6mm;
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
-          max-height: var(--title-block);
+          display: none;
         }
 
         /* 2×4 grid per A4 page with table-like lines */
         .print-page .images {
           grid-template-columns: 1fr 1fr;
           gap: 0; /* use borders as dividers instead of gaps */
-          border: 0.2mm solid #000; /* outer border */
+          /* No outer border; keep only internal separators */
           box-sizing: border-box;
-          /* Four uniform rows that fill the printable height minus paddings, title block and borders */
-          grid-auto-rows: calc((100vh - 20mm - var(--title-block) - 6mm - 0.4mm) / 4);
+          /* Four uniform rows that fill the printable height minus page paddings */
+          grid-auto-rows: calc((100vh - 20mm) / 4);
         }
 
         .print-page .images > .img {
@@ -158,6 +152,7 @@ import { ActivatedRoute } from '@angular/router';
           font-size: 12pt; /* keep captions unchanged */
           line-height: 1.2;
           margin-top: 2mm;
+          margin-bottom: 2mm; /* add space so caption doesn't sit on the separator line */
           text-align: center;
         }
         @page {
