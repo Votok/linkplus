@@ -8,13 +8,15 @@
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "lint": "ng lint",
-    "firebase:login": "npx firebase login",
-    "firebase:whoami": "npx firebase whoami",
-    "deploy": "npm run build && npx firebase deploy --only hosting",
-    "deploy:all": "npm run build && npx firebase deploy --only hosting,firestore:rules,storage",
-    "deploy:rules": "npx firebase deploy --only firestore:rules,storage",
-    "deploy:preview": "npm run build && npx firebase hosting:channel:deploy",
-    "emulators:start": "npx firebase emulators:start"
+    "firebase:login": "npx -y firebase-tools login",
+    "firebase:whoami": "npx -y firebase-tools whoami",
+    "firebase:version": "npx -y firebase-tools --version",
+    "deploy": "npm run build && npx -y firebase-tools deploy --only hosting",
+    "deploy:all": "npm run build && npx -y firebase-tools deploy --only hosting,firestore:rules,storage",
+    "deploy:rules": "npx -y firebase-tools deploy --only firestore:rules,storage",
+    "deploy:preview": "npm run build && npx -y firebase-tools hosting:channel:deploy",
+    "emulators:start": "npx -y firebase-tools emulators:start --project demo-linkplus",
+    "emulators:auth": "npx -y firebase-tools emulators:start --only auth --project demo-linkplus"
   },
   "prettier": {
     "printWidth": 100,
