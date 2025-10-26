@@ -8,7 +8,7 @@ import { ImageMeta, LocalizedTitles, Topic } from '../../shared/models';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Subscription } from 'rxjs';
 import { MarkdownModule, MarkdownComponent } from 'ngx-markdown';
-import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
+import { CdkDragDrop, CdkDragStart, CdkDragEnd, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
 
 @Component({
   standalone: true,
@@ -77,7 +77,7 @@ import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-
           (cdkDropListDropped)="dropImages($event)"
         >
           @for (img of t.images; track img.id) {
-          <div class="card" cdkDrag>
+          <div class="card" cdkDrag (cdkDragStarted)="onDragStart($event)" (cdkDragEnded)="onDragEnd()">
             <img [src]="img.url" [alt]="img.titles.en || 'image'" />
             <div class="img-fields">
               <mat-form-field appearance="outline">
@@ -120,7 +120,7 @@ import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-
             </ng-template>
 
             <ng-template cdkDragPreview>
-              <div class="card preview">
+              <div class="card preview" [style.width.px]="dragPreviewWidth">
                 <img [src]="img.url" [alt]="img.titles.en || 'image'" />
               </div>
             </ng-template>
@@ -193,7 +193,7 @@ import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-
         min-width: 280px;
       }
       .card.preview {
-        width: 100%;
+        /* width controlled dynamically during drag */
       }
       .card.placeholder {
         border: 2px dashed var(--mdc-theme-primary, #3f51b5);
@@ -252,6 +252,7 @@ export class TopicEditorComponent implements OnInit, OnDestroy {
   uploading = false;
   reordering = false;
   deleting = false;
+  dragPreviewWidth = 0;
 
   readonly form = this.fb.nonNullable.group({
     name: ['', Validators.required],
@@ -365,5 +366,19 @@ export class TopicEditorComponent implements OnInit, OnDestroy {
     } finally {
       this.reordering = false;
     }
+  }
+
+  onDragStart(event: CdkDragStart<ImageMeta>) {
+    try {
+      const el = event.source.element.nativeElement as HTMLElement;
+      const rect = el.getBoundingClientRect();
+      this.dragPreviewWidth = Math.round(rect.width);
+    } catch {
+      this.dragPreviewWidth = 0;
+    }
+  }
+
+  onDragEnd() {
+    this.dragPreviewWidth = 0;
   }
 }
