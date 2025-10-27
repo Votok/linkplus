@@ -18,9 +18,7 @@
     "deploy:prod": "npm run build && npx -y firebase-tools deploy --only hosting --project $npm_config_project",
     "deploy:all": "npm run build && npx -y firebase-tools deploy --only hosting,firestore:rules,storage",
     "deploy:rules": "npx -y firebase-tools deploy --only firestore:rules,storage",
-    "deploy:preview": "npm run build && npx -y firebase-tools hosting:channel:deploy",
-    "emulators:start": "npx -y firebase-tools emulators:start --project demo-linkplus",
-    "emulators:auth": "npx -y firebase-tools emulators:start --only auth --project demo-linkplus"
+    "deploy:preview": "npm run build && npx -y firebase-tools hosting:channel:deploy"
   },
   "prettier": {
     "printWidth": 100,

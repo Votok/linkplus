@@ -30,13 +30,6 @@ export const environment = {
   },
   // The single admin account that can access the app
   adminEmail: 'admin@example.com',
-  // Optional: use Firebase emulators locally
-  useEmulators: false,
-  emulators: {
-    auth: { host: 'localhost', port: 9099 },
-    firestore: { host: 'localhost', port: 8080 },
-    storage: { host: 'localhost', port: 9199 },
-  },
 } as const;
 ```
 
@@ -126,45 +119,6 @@ To deploy rules along with hosting, you can run:
 
 ```bash
 npm run deploy:all
-```
-
-### Using local Firebase emulators (optional)
-
-- In `src/environments/environment.development.ts` set `useEmulators: true`
-- Prerequisite: Firestore emulator requires Java (JRE 11+). On macOS you can install OpenJDK via Homebrew:
-
-```bash
-brew install openjdk@17
-```
-
-Then add it to your shell (Apple Silicon):
-
-```bash
-echo 'export PATH="/opt/homebrew/opt/openjdk@17/bin:$PATH"' >> ~/.zshrc
-source ~/.zshrc
-java -version
-```
-
-Or on Intel Macs:
-
-```bash
-echo 'export PATH="/usr/local/opt/openjdk@17/bin:$PATH"' >> ~/.zshrc
-source ~/.zshrc
-java -version
-```
-
-- Start emulators locally (uses a demo project ID that doesn’t require login):
-
-```bash
-npm run emulators:start
-```
-
-The app is already configured to connect to the emulators when `useEmulators` is enabled.
-
-Tip: If you only need to test Authentication (no Firestore), you can run the auth emulator only (no Java required):
-
-```bash
-npm run emulators:auth
 ```
 
 ## Running unit tests
