@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
+import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -6,15 +6,10 @@ import { MATERIAL_IMPORTS } from '../../shared/material.imports';
 import { TopicsService } from '../../services/topics.service';
 import { ImageMeta, LocalizedTitles, Topic } from '../../shared/models';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { Subscription } from 'rxjs';
+import { filter, map, switchMap, tap, distinctUntilChanged } from 'rxjs';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MarkdownModule, MarkdownComponent } from 'ngx-markdown';
-import {
-  CdkDragDrop,
-  CdkDragStart,
-  CdkDragEnd,
-  DragDropModule,
-  moveItemInArray,
-} from '@angular/cdk/drag-drop';
+import { CdkDragDrop, CdkDragStart, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
 
 @Component({
   standalone: true,
@@ -252,14 +247,13 @@ import {
     `,
   ],
 })
-export class TopicEditorComponent implements OnInit, OnDestroy {
+export class TopicEditorComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly topics = inject(TopicsService);
   private readonly fb = inject(FormBuilder);
   private readonly snack = inject(MatSnackBar);
-
-  private sub?: Subscription;
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly id = signal<string | null>(null);
   readonly topic = signal<Topic | null>(null);
@@ -275,11 +269,16 @@ export class TopicEditorComponent implements OnInit, OnDestroy {
   });
 
   ngOnInit(): void {
-    this.sub = this.route.paramMap.subscribe(async (pm) => {
-      const id = pm.get('id');
-      if (!id) return;
-      this.id.set(id);
-      this.topics.get$(id).subscribe((t) => {
+    this.route.paramMap
+      .pipe(
+        map((pm) => pm.get('id')),
+        filter((id): id is string => !!id),
+        distinctUntilChanged(),
+        tap((id) => this.id.set(id)),
+        switchMap((id) => this.topics.get$(id)),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe((t) => {
         this.topic.set(t ?? null);
         if (t) {
           this.form.patchValue(
@@ -288,11 +287,6 @@ export class TopicEditorComponent implements OnInit, OnDestroy {
           );
         }
       });
-    });
-  }
-
-  ngOnDestroy(): void {
-    this.sub?.unsubscribe();
   }
 
   async onSave() {

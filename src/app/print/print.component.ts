@@ -1,10 +1,11 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MATERIAL_IMPORTS } from '../shared/material.imports';
 import { TopicsService } from '../services/topics.service';
 import { AsyncPipe } from '@angular/common';
 import { Topic, ImageMeta } from '../shared/models';
 import { ActivatedRoute } from '@angular/router';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
   standalone: true,
@@ -170,6 +171,7 @@ import { ActivatedRoute } from '@angular/router';
 export class PrintComponent {
   private readonly topics = inject(TopicsService);
   private readonly route = inject(ActivatedRoute);
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly topics$ = this.topics.list$();
   readonly topicsList = signal<Topic[]>([]);
@@ -186,7 +188,7 @@ export class PrintComponent {
     const qpId = this.route.snapshot.queryParamMap.get('topic');
     if (qpId) this.selectedTopicId.set(qpId);
 
-    this.topics$.subscribe((list) => {
+    this.topics$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((list) => {
       this.topicsList.set(list);
       if (!this.selectedTopicId() && list.length) {
         this.selectedTopicId.set(list[0].id);

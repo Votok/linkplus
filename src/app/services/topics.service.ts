@@ -98,48 +98,48 @@ export class TopicsService {
       throw new Error('File too large');
     }
 
-    const topicRef = doc(this.db, TOPICS_COLLECTION, topicId);
+    // Generate Storage path deterministically for this upload attempt
+    const imageId = newId();
+    const ext = getExtFromFile(file);
+    const path = `${TOPICS_COLLECTION}/${topicId}/images/${imageId}.${ext}`;
 
-    // Enforce limit inside a transaction to avoid races
-    const imageMeta = await runTransaction(this.db, async (trx) => {
+    // 1) Upload to Storage OUTSIDE of any Firestore transaction.
+    const sref = ref(this.storage, path);
+    const task = uploadBytesResumable(sref, file, { contentType: file.type });
+    await new Promise<void>((resolve, reject) => {
+      task.on(
+        'state_changed',
+        undefined,
+        (e) => reject(e),
+        () => resolve()
+      );
+    });
+    const url = await getDownloadURL(sref);
+
+    // 2) Append metadata in a minimal Firestore transaction that enforces limits.
+    const topicRef = doc(this.db, TOPICS_COLLECTION, topicId);
+    const meta: Omit<ImageMeta, 'createdAt'> = {
+      id: imageId,
+      path,
+      url,
+      titles,
+      mime: file.type,
+      size: file.size,
+    };
+
+    // Important: We do NOT delete blobs on Firestore failure by policy.
+    const committedMeta = await runTransaction(this.db, async (trx) => {
       const snap = await trx.get(topicRef);
       if (!snap.exists()) throw new Error('Topic not found');
       const data = snap.data() as Topic;
       const current = Array.isArray(data.images) ? data.images.slice() : [];
       if (current.length >= MAX_IMAGES) throw new Error('Image limit reached');
-
-      const imageId = newId();
-      const ext = getExtFromFile(file);
-      const path = `${TOPICS_COLLECTION}/${topicId}/images/${imageId}.${ext}`;
-
-      const sref = ref(this.storage, path);
-      const task = uploadBytesResumable(sref, file, { contentType: file.type });
-      await new Promise<void>((resolve, reject) => {
-        task.on(
-          'state_changed',
-          undefined,
-          (e) => reject(e),
-          () => resolve()
-        );
-      });
-      const url = await getDownloadURL(sref);
-
-      const meta: Omit<ImageMeta, 'createdAt'> = {
-        id: imageId,
-        path,
-        url,
-        titles,
-        mime: file.type,
-        size: file.size,
-      };
-
       current.push(meta);
       await trx.update(topicRef, { images: current, updatedAt: serverTimestamp() });
-
       return meta;
     });
 
-    return imageMeta;
+    return committedMeta;
   }
 
   async deleteImage(topicId: string, imageId: string): Promise<void> {
