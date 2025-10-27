@@ -7,7 +7,7 @@
     "rules": "storage.rules"
   },
   "hosting": {
-    "public": "dist/linkplus",
+    "public": "dist/linkplus/browser",
     "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
     "headers": [
       {

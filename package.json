@@ -14,6 +14,8 @@
     "firebase:whoami": "npx -y firebase-tools whoami",
     "firebase:version": "npx -y firebase-tools --version",
     "deploy": "npm run build && npx -y firebase-tools deploy --only hosting",
+    "deploy:dev": "npm run build && npx -y firebase-tools deploy --only hosting --project linkplus-dev",
+    "deploy:prod": "npm run build && npx -y firebase-tools deploy --only hosting --project $npm_config_project",
     "deploy:all": "npm run build && npx -y firebase-tools deploy --only hosting,firestore:rules,storage",
     "deploy:rules": "npx -y firebase-tools deploy --only firestore:rules,storage",
     "deploy:preview": "npm run build && npx -y firebase-tools hosting:channel:deploy",
