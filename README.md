@@ -123,10 +123,23 @@ npm run firebase:login
 npm run firebase:whoami
 ```
 
-Deploy to Firebase Hosting (builds the app first):
+### Dev vs Prod builds and deploys
+
+- Development builds use Angular's `development` configuration and the file replacement that loads `src/environments/environment.development.ts`.
+- Production builds use the default `production` configuration and `src/environments/environment.ts`.
+
+Quick commands:
 
 ```bash
+# Deploy to Development (builds with development config, uses environment.development.ts)
+npm run deploy:dev
+
+# Deploy to Production (builds with production config, uses environment.ts)
+# Uses your default project from .firebaserc or "firebase use"
 npm run deploy
+
+# Or explicitly set the prod project on the command
+npm run deploy:prod --project=YOUR_PROD_PROJECT_ID
 ```
 
 Optional: Create a temporary preview URL (great for reviews):
