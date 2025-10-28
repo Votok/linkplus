@@ -17,13 +17,13 @@ const copyOnly = args.has('--copy-only');
  */
 function replacePlaceholders(content) {
   const mapping = {
-    '__FIREBASE_API_KEY__': process.env.FIREBASE_API_KEY,
-    '__FIREBASE_AUTH_DOMAIN__': process.env.FIREBASE_AUTH_DOMAIN,
-    '__FIREBASE_PROJECT_ID__': process.env.FIREBASE_PROJECT_ID,
-    '__FIREBASE_STORAGE_BUCKET__': process.env.FIREBASE_STORAGE_BUCKET,
-    '__FIREBASE_MESSAGING_SENDER_ID__': process.env.FIREBASE_MESSAGING_SENDER_ID,
-    '__FIREBASE_APP_ID__': process.env.FIREBASE_APP_ID,
-    '__ADMIN_EMAIL__': process.env.ADMIN_EMAIL,
+    __FIREBASE_API_KEY__: process.env.FIREBASE_API_KEY,
+    __FIREBASE_AUTH_DOMAIN__: process.env.FIREBASE_AUTH_DOMAIN,
+    __FIREBASE_PROJECT_ID__: process.env.FIREBASE_PROJECT_ID,
+    __FIREBASE_STORAGE_BUCKET__: process.env.FIREBASE_STORAGE_BUCKET,
+    __FIREBASE_MESSAGING_SENDER_ID__: process.env.FIREBASE_MESSAGING_SENDER_ID,
+    __FIREBASE_APP_ID__: process.env.FIREBASE_APP_ID,
+    __ADMIN_EMAIL__: process.env.ADMIN_EMAIL,
   };
 
   for (const [token, value] of Object.entries(mapping)) {

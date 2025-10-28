@@ -15,7 +15,6 @@ Create the following files and replace placeholders with your Firebase Web App c
 - `src/environments/environment.development.ts` (used for `ng serve` / development)
 - `src/environments/environment.ts` (used for production builds)
 
-
 ## Environment configuration (keep secrets out of Git)
 
 This project keeps real secrets only in untracked local files. Templates provide structure; you copy them once and fill in values locally.
@@ -31,11 +30,14 @@ Placeholders are of the form `__FIREBASE_API_KEY__`, `__ADMIN_EMAIL__`, etc.
 ### Quick setup (local dev)
 
 1. Generate local files from templates (copy-only, no env vars needed):
-  - `npm run env:setup`
-  - or simply run `npm start`/`npm run build` once; they auto-create missing env files via copy-only
+
+- `npm run env:setup`
+- or simply run `npm start`/`npm run build` once; they auto-create missing env files via copy-only
+
 2. Open the generated files and replace placeholders with your real values:
-  - `src/environments/environment.development.ts`
-  - `src/environments/environment.ts`
+
+- `src/environments/environment.development.ts`
+- `src/environments/environment.ts`
 
 These files are `.gitignore`d and won’t be committed.
 
