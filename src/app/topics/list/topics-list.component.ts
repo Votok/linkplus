@@ -88,8 +88,8 @@ export class TopicsListComponent implements OnInit {
   readonly topics = toSignal(this.topicsService.list$());
 
   ngOnInit(): void {
-    // Show overlay until the first list emission arrives
-    this.loading.begin();
+    // Show overlay until the first list emission arrives (immediate to avoid race/flicker)
+    this.loading.beginImmediate(180);
     this.topicsService
       .list$()
       .pipe(take(1))

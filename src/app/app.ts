@@ -1,5 +1,13 @@
 import { Component, inject, signal } from '@angular/core';
-import { Router, RouterLink, RouterOutlet } from '@angular/router';
+import {
+  Router,
+  RouterLink,
+  RouterOutlet,
+  NavigationStart,
+  NavigationEnd,
+  NavigationCancel,
+  NavigationError,
+} from '@angular/router';
 import { NgIf, AsyncPipe } from '@angular/common';
 import { MATERIAL_IMPORTS } from './shared/material.imports';
 import { AuthService } from './services/auth.service';
@@ -20,5 +28,20 @@ export class App {
   async onLogout() {
     await this.auth.logout();
     await this.router.navigateByUrl('/login');
+  }
+
+  constructor() {
+    // Global navigation spinner: show on navigation start, hide on end/cancel/error
+    this.router.events.subscribe((e) => {
+      if (e instanceof NavigationStart) {
+        this.loading.beginImmediate(120);
+      } else if (
+        e instanceof NavigationEnd ||
+        e instanceof NavigationCancel ||
+        e instanceof NavigationError
+      ) {
+        this.loading.end();
+      }
+    });
   }
 }

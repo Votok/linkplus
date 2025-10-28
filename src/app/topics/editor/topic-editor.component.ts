@@ -267,8 +267,8 @@ export class TopicEditorComponent implements OnInit {
   });
 
   ngOnInit(): void {
-    // Show global overlay during initial topic load (first emission only)
-    this.loading.begin();
+    // Show global overlay during initial topic load (first emission only), immediate
+    this.loading.beginImmediate(180);
     let firstEmission = true;
 
     this.route.paramMap
