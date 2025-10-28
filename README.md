@@ -18,39 +18,35 @@ Create the following files and replace placeholders with your Firebase Web App c
 
 ## Environment configuration (keep secrets out of Git)
 
-This project uses template-based environment files. Real Firebase keys and `adminEmail` are not committed.
+This project keeps real secrets only in untracked local files. Templates provide structure; you copy them once and fill in values locally.
 
 Files in `src/environments/`:
 
 - `environment.template.ts` – production template with placeholder tokens
 - `environment.development.template.ts` – development template with placeholder tokens
-- `environment.ts` and `environment.development.ts` – generated at build/serve time, ignored by Git
+- `environment.ts` and `environment.development.ts` – your local copies (ignored by Git)
 
 Placeholders are of the form `__FIREBASE_API_KEY__`, `__ADMIN_EMAIL__`, etc.
 
-### Quick setup
+### Quick setup (local dev)
 
-Option A – generate from env vars (recommended):
+1. Generate local files from templates (copy-only, no env vars needed):
+  - `npm run env:setup`
+  - or simply run `npm start`/`npm run build` once; they auto-create missing env files via copy-only
+2. Open the generated files and replace placeholders with your real values:
+  - `src/environments/environment.development.ts`
+  - `src/environments/environment.ts`
 
-1. Export required environment variables in your shell (or your CI):
-   - `FIREBASE_API_KEY`
-   - `FIREBASE_AUTH_DOMAIN`
-   - `FIREBASE_PROJECT_ID`
-   - `FIREBASE_STORAGE_BUCKET`
-   - `FIREBASE_MESSAGING_SENDER_ID`
-   - `FIREBASE_APP_ID`
-   - `ADMIN_EMAIL`
-2. Run:
-   - `npm run env:setup`
+These files are `.gitignore`d and won’t be committed.
 
-Option B – copy templates and fill in values manually:
+### CI/CD
 
-1. Copy the templates to the real filenames:
-   - `cp src/environments/environment.template.ts src/environments/environment.ts`
-   - `cp src/environments/environment.development.template.ts src/environments/environment.development.ts`
-2. Edit the files to replace placeholders with your real values.
+For CI, you have two options:
 
-The `start` and `build` scripts will automatically generate the environment files if missing by running the generator with `--if-missing`.
+- Secure file provisioning (preferred): write `src/environments/environment.ts` (and dev variant if needed) from a secure store at job runtime.
+- Or use the generator with CI env vars: `npm run env:ci` (reads values from CI env and writes the files) before `npm run build`.
+
+The `start` and `build` scripts run the generator with `--if-missing --copy-only`, so they will not overwrite your local files once created.
 Example structure (replace the placeholder strings):
 
 ```ts

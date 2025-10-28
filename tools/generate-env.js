@@ -9,6 +9,7 @@ const ENV_DIR = path.join(ROOT, 'src', 'environments');
 
 const args = new Set(process.argv.slice(2));
 const ifMissingOnly = args.has('--if-missing');
+const copyOnly = args.has('--copy-only');
 
 /**
  * Replace placeholder tokens in content with values from process.env.
@@ -53,7 +54,7 @@ function generateFromTemplate(templateBasename, destBasename) {
   }
 
   const template = fs.readFileSync(templatePath, 'utf8');
-  const output = replacePlaceholders(template);
+  const output = copyOnly ? template : replacePlaceholders(template);
 
   ensureDir(path.dirname(destPath));
   fs.writeFileSync(destPath, output, 'utf8');
@@ -72,7 +73,7 @@ function run() {
       if (r.skipped) {
         console.log(`[generate-env] Skipped (exists): ${rel}`);
       } else {
-        console.log(`[generate-env] Wrote: ${rel}`);
+        console.log(`[generate-env] Wrote: ${rel}${copyOnly ? ' (copy-only)' : ''}`);
       }
     }
   } catch (err) {

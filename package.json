@@ -3,9 +3,10 @@
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
-    "env:setup": "node tools/generate-env.js",
-    "start": "node tools/generate-env.js --if-missing && ng serve",
-    "build": "node tools/generate-env.js --if-missing && ng build",
+    "env:setup": "node tools/generate-env.js --copy-only",
+    "env:ci": "node tools/generate-env.js",
+    "start": "node tools/generate-env.js --if-missing --copy-only && ng serve",
+    "build": "node tools/generate-env.js --if-missing --copy-only && ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "lint": "ng lint",
