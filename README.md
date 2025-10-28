@@ -15,6 +15,42 @@ Create the following files and replace placeholders with your Firebase Web App c
 - `src/environments/environment.development.ts` (used for `ng serve` / development)
 - `src/environments/environment.ts` (used for production builds)
 
+
+## Environment configuration (keep secrets out of Git)
+
+This project uses template-based environment files. Real Firebase keys and `adminEmail` are not committed.
+
+Files in `src/environments/`:
+
+- `environment.template.ts` – production template with placeholder tokens
+- `environment.development.template.ts` – development template with placeholder tokens
+- `environment.ts` and `environment.development.ts` – generated at build/serve time, ignored by Git
+
+Placeholders are of the form `__FIREBASE_API_KEY__`, `__ADMIN_EMAIL__`, etc.
+
+### Quick setup
+
+Option A – generate from env vars (recommended):
+
+1. Export required environment variables in your shell (or your CI):
+   - `FIREBASE_API_KEY`
+   - `FIREBASE_AUTH_DOMAIN`
+   - `FIREBASE_PROJECT_ID`
+   - `FIREBASE_STORAGE_BUCKET`
+   - `FIREBASE_MESSAGING_SENDER_ID`
+   - `FIREBASE_APP_ID`
+   - `ADMIN_EMAIL`
+2. Run:
+   - `npm run env:setup`
+
+Option B – copy templates and fill in values manually:
+
+1. Copy the templates to the real filenames:
+   - `cp src/environments/environment.template.ts src/environments/environment.ts`
+   - `cp src/environments/environment.development.template.ts src/environments/environment.development.ts`
+2. Edit the files to replace placeholders with your real values.
+
+The `start` and `build` scripts will automatically generate the environment files if missing by running the generator with `--if-missing`.
 Example structure (replace the placeholder strings):
 
 ```ts
