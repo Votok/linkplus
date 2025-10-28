@@ -1,15 +1,15 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
-import { AsyncPipe } from '@angular/common';
 import { MATERIAL_IMPORTS } from '../../shared/material.imports';
 import { TopicsService } from '../../services/topics.service';
 import { Topic } from '../../shared/models';
+import { toSignal } from '@angular/core/rxjs-interop';
 
 @Component({
   standalone: true,
   selector: 'app-topics-list',
-  imports: [CommonModule, RouterLink, AsyncPipe, ...MATERIAL_IMPORTS],
+  imports: [CommonModule, RouterLink, ...MATERIAL_IMPORTS],
   template: `
     <div class="container">
       <div class="header">
@@ -23,7 +23,7 @@ import { Topic } from '../../shared/models';
       <mat-divider />
 
       <mat-list>
-        @for (t of topics$ | async; track t.id) {
+        @for (t of topics(); track t.id) {
         <mat-list-item>
           <div matListItemTitle>{{ t.name }}</div>
           <!-- <div matListItemLine>{{ t.description || 'No description' }}</div> -->
@@ -47,7 +47,7 @@ import { Topic } from '../../shared/models';
         }
       </mat-list>
 
-      @if ((topics$ | async)?.length === 0) {
+      @if (topics()?.length === 0) {
       <p class="hint">No topics yet. Use "Add Topic" to create one.</p>
       }
     </div>
@@ -79,19 +79,19 @@ import { Topic } from '../../shared/models';
   ],
 })
 export class TopicsListComponent {
-  private readonly topics = inject(TopicsService);
+  private readonly topicsService = inject(TopicsService);
   private readonly router = inject(Router);
 
-  readonly topics$ = this.topics.list$();
+  readonly topics = toSignal(this.topicsService.list$());
 
   async addTopic() {
-    const id = await this.topics.create({ name: 'New Topic', description: '' });
+    const id = await this.topicsService.create({ name: 'New Topic', description: '' });
     await this.router.navigate(['/topics', id, 'edit']);
   }
 
   async deleteTopic(t: Topic) {
     const yes = confirm(`Delete topic "${t.name}"? This cannot be undone.`);
     if (!yes) return;
-    await this.topics.remove(t.id);
+    await this.topicsService.remove(t.id);
   }
 }

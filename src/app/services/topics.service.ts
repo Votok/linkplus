@@ -45,12 +45,12 @@ export class TopicsService {
 
   list$(): Observable<Topic[]> {
     const col = collection(this.db, TOPICS_COLLECTION);
-    return collectionData(col, { idField: 'id' }) as unknown as Observable<Topic[]>;
+    return collectionData(col, { idField: 'id' }) as Observable<Topic[]>;
   }
 
   get$(id: string): Observable<Topic | undefined> {
     const ref = doc(this.db, TOPICS_COLLECTION, id);
-    return docData(ref, { idField: 'id' }) as unknown as Observable<Topic | undefined>;
+    return docData(ref, { idField: 'id' }) as Observable<Topic | undefined>;
   }
 
   async create(data: { name: string; description: string }): Promise<string> {
