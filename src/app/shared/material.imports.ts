@@ -3,6 +3,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatCardModule } from '@angular/material/card';
@@ -17,6 +18,7 @@ export const MATERIAL_IMPORTS = [
   MatIconModule,
   MatSnackBarModule,
   MatProgressSpinnerModule,
+  MatProgressBarModule,
   MatFormFieldModule,
   MatInputModule,
   MatCardModule,

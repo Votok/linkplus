@@ -13,3 +13,34 @@
     display: none !important;
   }
 }
+
+/* Global loading overlay (non-blocking visual indicator) */
+.global-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1200; /* above app chrome, below Material dialogs (if any) */
+  display: grid;
+  place-items: center;
+  background: rgba(0, 0, 0, 0.06);
+  backdrop-filter: saturate(120%) blur(1px);
+  pointer-events: auto; /* blocking: prevent interactions under overlay */
+  cursor: wait;
+}
+
+/* Accessible text for screen readers only */
+.visually-hidden {
+  position: absolute !important;
+  clip: rect(1px, 1px, 1px, 1px);
+  padding: 0 !important;
+  border: 0 !important;
+  height: 1px !important;
+  width: 1px !important;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+@media print {
+  .global-overlay {
+    display: none !important;
+  }
+}

@@ -16,4 +16,11 @@
   <button mat-button *ngIf="auth.isLoggedIn$ | async" (click)="onLogout()">Logout</button>
 </mat-toolbar>
 
+<!-- Global overlay with centered spinner for data mutations only -->
+<div class="global-overlay" *ngIf="loading.visible()" aria-live="polite" role="status">
+  <mat-progress-spinner mode="indeterminate" diameter="72" strokeWidth="5" color="accent" />
+  <span class="visually-hidden">Loading…</span>
+  <!-- Blocking overlay: pointer-events are enabled via CSS -->
+</div>
+
 <router-outlet />

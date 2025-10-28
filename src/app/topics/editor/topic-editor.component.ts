@@ -10,6 +10,7 @@ import { filter, map, switchMap, tap, distinctUntilChanged } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MarkdownModule, MarkdownComponent } from 'ngx-markdown';
 import { CdkDragDrop, CdkDragStart, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
+import { LoadingService } from '../../services/loading.service';
 
 @Component({
   standalone: true,
@@ -135,10 +136,6 @@ import { CdkDragDrop, CdkDragStart, DragDropModule, moveItemInArray } from '@ang
         </div>
       </section>
     </div>
-    } @else {
-    <div class="loading">
-      <mat-progress-spinner mode="indeterminate" diameter="36"></mat-progress-spinner>
-    </div>
     }
   `,
   styles: [
@@ -251,6 +248,7 @@ export class TopicEditorComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly topics = inject(TopicsService);
+  protected readonly loading = inject(LoadingService);
   private readonly fb = inject(FormBuilder);
   private readonly snack = inject(MatSnackBar);
   private readonly destroyRef = inject(DestroyRef);
@@ -269,6 +267,10 @@ export class TopicEditorComponent implements OnInit {
   });
 
   ngOnInit(): void {
+    // Show global overlay during initial topic load (first emission only)
+    this.loading.begin();
+    let firstEmission = true;
+
     this.route.paramMap
       .pipe(
         map((pm) => pm.get('id')),
@@ -280,6 +282,10 @@ export class TopicEditorComponent implements OnInit {
       )
       .subscribe((t) => {
         this.topic.set(t ?? null);
+        if (firstEmission) {
+          this.loading.end();
+          firstEmission = false;
+        }
         if (t) {
           this.form.patchValue(
             { name: t.name, description: t.description ?? '' },
@@ -294,11 +300,14 @@ export class TopicEditorComponent implements OnInit {
     if (!id || this.form.invalid) return;
     this.saving = true;
     try {
+      // Ensure the global overlay is visible for this explicit save action
+      this.loading.beginImmediate(180);
       await this.topics.update(id, this.form.getRawValue());
       this.snack.open('Topic saved', 'OK', { duration: 1500 });
     } catch {
       this.snack.open('Failed to save topic', 'Dismiss', { duration: 3000 });
     } finally {
+      this.loading.end();
       this.saving = false;
     }
   }
@@ -330,7 +339,12 @@ export class TopicEditorComponent implements OnInit {
     const images = (topic.images || []).map((i) =>
       i.id === img.id ? { ...i, titles: { ...i.titles, [lang]: value } } : i
     );
-    await this.topics.update(id, { images });
+    this.loading.beginImmediate(150);
+    try {
+      await this.topics.update(id, { images });
+    } finally {
+      this.loading.end();
+    }
   }
 
   async deleteImage(img: ImageMeta) {
@@ -365,6 +379,7 @@ export class TopicEditorComponent implements OnInit {
     this.reordering = true;
     this.topic.set({ ...t, images: nextImages });
     try {
+      this.loading.beginImmediate(180);
       await this.topics.update(id, { images: nextImages });
       this.snack.open('Order saved', 'OK', { duration: 1000 });
     } catch (e: unknown) {
@@ -373,6 +388,7 @@ export class TopicEditorComponent implements OnInit {
       const msg = e instanceof Error ? e.message : 'Failed to save order';
       this.snack.open(msg, 'Dismiss', { duration: 3000 });
     } finally {
+      this.loading.end();
       this.reordering = false;
     }
   }

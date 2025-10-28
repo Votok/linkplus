@@ -1,10 +1,12 @@
-import { Component, inject } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { MATERIAL_IMPORTS } from '../../shared/material.imports';
 import { TopicsService } from '../../services/topics.service';
 import { Topic } from '../../shared/models';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { LoadingService } from '../../services/loading.service';
+import { take } from 'rxjs';
 
 @Component({
   standalone: true,
@@ -78,20 +80,43 @@ import { toSignal } from '@angular/core/rxjs-interop';
     `,
   ],
 })
-export class TopicsListComponent {
+export class TopicsListComponent implements OnInit {
   private readonly topicsService = inject(TopicsService);
   private readonly router = inject(Router);
+  private readonly loading = inject(LoadingService);
 
   readonly topics = toSignal(this.topicsService.list$());
 
+  ngOnInit(): void {
+    // Show overlay until the first list emission arrives
+    this.loading.begin();
+    this.topicsService
+      .list$()
+      .pipe(take(1))
+      .subscribe({
+        next: () => this.loading.end(),
+        error: () => this.loading.end(),
+      });
+  }
+
   async addTopic() {
-    const id = await this.topicsService.create({ name: 'New Topic', description: '' });
-    await this.router.navigate(['/topics', id, 'edit']);
+    this.loading.beginImmediate(180);
+    try {
+      const id = await this.topicsService.create({ name: 'New Topic', description: '' });
+      await this.router.navigate(['/topics', id, 'edit']);
+    } finally {
+      this.loading.end();
+    }
   }
 
   async deleteTopic(t: Topic) {
     const yes = confirm(`Delete topic "${t.name}"? This cannot be undone.`);
     if (!yes) return;
-    await this.topicsService.remove(t.id);
+    this.loading.beginImmediate(180);
+    try {
+      await this.topicsService.remove(t.id);
+    } finally {
+      this.loading.end();
+    }
   }
 }
