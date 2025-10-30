@@ -4,13 +4,26 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MATERIAL_IMPORTS } from '../../shared/material.imports';
 import { TopicsService } from '../../services/topics.service';
-import { ImageMeta, LocalizedTitles, Topic } from '../../shared/models';
+import {
+  ImageMeta,
+  LocalizedTitles,
+  Topic,
+  LanguageCode,
+  SUPPORTED_LANGUAGES,
+} from '../../shared/models';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { filter, map, switchMap, tap, distinctUntilChanged } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MarkdownModule, MarkdownComponent } from 'ngx-markdown';
 import { CdkDragDrop, CdkDragStart, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
 import { LoadingService } from '../../services/loading.service';
+
+const LANGUAGE_LABELS: Record<LanguageCode, string> = {
+  en: 'English',
+  cs: 'Čeština',
+  es: 'Español',
+};
+type NonEnglishLanguage = Exclude<LanguageCode, 'en'>;
 
 @Component({
   standalone: true,
@@ -64,6 +77,16 @@ import { LoadingService } from '../../services/loading.service';
 
       <section class="images">
         <h3>Images</h3>
+        <div class="controls">
+          <mat-form-field appearance="outline">
+            <mat-label>Working language</mat-label>
+            <mat-select [value]="selectedLang()" (valueChange)="selectedLang.set($event)">
+              @for (l of langs; track l) {
+              <mat-option [value]="l">{{ languageLabel(l) }} ({{ l.toUpperCase() }})</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+        </div>
         <input
           type="file"
           accept="image/jpeg,image/png,image/webp"
@@ -96,19 +119,11 @@ import { LoadingService } from '../../services/loading.service';
                 />
               </mat-form-field>
               <mat-form-field appearance="outline">
-                <mat-label>Titulek (CS)</mat-label>
+                <mat-label>Title ({{ selectedLang().toUpperCase() }})</mat-label>
                 <input
                   matInput
-                  [value]="img.titles.cs || ''"
-                  (change)="onTitleChange(img, 'cs', $any($event.target).value)"
-                />
-              </mat-form-field>
-              <mat-form-field appearance="outline">
-                <mat-label>Título (ES)</mat-label>
-                <input
-                  matInput
-                  [value]="img.titles.es || ''"
-                  (change)="onTitleChange(img, 'es', $any($event.target).value)"
+                  [value]="img.titles[selectedLang()] || ''"
+                  (change)="onTitleChange(img, selectedLang(), $any($event.target).value)"
                 />
               </mat-form-field>
               <div class="row-actions">
@@ -177,6 +192,11 @@ import { LoadingService } from '../../services/loading.service';
       .images {
         display: grid;
         gap: 12px;
+      }
+      .images .controls {
+        display: flex;
+        gap: 12px;
+        align-items: center;
       }
       .grid {
         display: flex;
@@ -261,6 +281,15 @@ export class TopicEditorComponent implements OnInit {
   deleting = false;
   dragPreviewWidth = 0;
 
+  readonly langs: NonEnglishLanguage[] = SUPPORTED_LANGUAGES.filter(
+    (l) => l !== 'en'
+  ) as NonEnglishLanguage[];
+  readonly selectedLang = signal<NonEnglishLanguage>(
+    this.langs.includes('cs' as NonEnglishLanguage)
+      ? ('cs' as NonEnglishLanguage)
+      : this.langs[0] ?? ('cs' as NonEnglishLanguage)
+  );
+
   readonly form = this.fb.nonNullable.group({
     name: ['', Validators.required],
     description: [''],
@@ -332,7 +361,7 @@ export class TopicEditorComponent implements OnInit {
     }
   }
 
-  async onTitleChange(img: ImageMeta, lang: 'en' | 'cs' | 'es', value: string) {
+  async onTitleChange(img: ImageMeta, lang: LanguageCode, value: string) {
     const id = this.id();
     const topic = this.topic();
     if (!id || !topic) return;
@@ -345,6 +374,10 @@ export class TopicEditorComponent implements OnInit {
     } finally {
       this.loading.end();
     }
+  }
+
+  languageLabel(code: LanguageCode): string {
+    return LANGUAGE_LABELS[code] ?? code.toUpperCase();
   }
 
   async deleteImage(img: ImageMeta) {
