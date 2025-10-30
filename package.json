@@ -19,9 +19,10 @@
     "deploy": "npm run build && npx -y firebase-tools deploy --only hosting",
     "deploy:dev": "npm run build:dev && npx -y firebase-tools deploy --only hosting --project linkplus-dev",
     "deploy:prod": "npm run build && npx -y firebase-tools deploy --only hosting --project $npm_config_project",
-    "deploy:all": "npm run build && npx -y firebase-tools deploy --only hosting,firestore:rules,storage",
-    "deploy:rules": "npx -y firebase-tools deploy --only firestore:rules,storage",
-    "deploy:preview": "npm run build && npx -y firebase-tools hosting:channel:deploy"
+    "deploy:all:dev": "npm run build:dev && npx -y firebase-tools deploy --only hosting,firestore:rules,storage --project linkplus-dev",
+    "deploy:all:prod": "npm run build && npx -y firebase-tools deploy --only hosting,firestore:rules,storage --project linkplus-prod-mock",
+    "deploy:rules:dev": "npx -y firebase-tools deploy --only firestore:rules,storage --project linkplus-dev",
+    "deploy:rules:prod": "npx -y firebase-tools deploy --only firestore:rules,storage --project linkplus-prod-mock"
   },
   "prettier": {
     "printWidth": 100,
