@@ -1,15 +1,27 @@
 :host {
   display: grid;
   /* Keep toolbar fixed; content area can scroll within its own track */
-  grid-template-rows: auto minmax(0, 1fr);
+  grid-template-rows: auto 1fr;
   min-height: 100dvh;
 }
 
-/* Prevent <router-outlet> from creating its own grid item.
-   This ensures the routed component itself occupies the second grid row,
-   avoiding an empty spacer above the real content. */
-router-outlet {
-  display: contents;
+/* Lock the viewport and route all scrolling into the app content area */
+html,
+body {
+  height: 100%;
+  overflow: hidden;
+}
+
+.content {
+  min-height: 0; /* allow child overflow to be measured correctly in grid */
+  overflow: hidden; /* default: child pages opt-in to scroll where needed */
+}
+
+/* Keep the top bar visible while the page/content scrolls */
+mat-toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 1100; /* above page content */
 }
 
 .spacer {
