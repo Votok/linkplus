@@ -1,7 +1,15 @@
 :host {
   display: grid;
-  grid-template-rows: auto 1fr;
+  /* Keep toolbar fixed; content area can scroll within its own track */
+  grid-template-rows: auto minmax(0, 1fr);
   min-height: 100dvh;
+}
+
+/* Prevent <router-outlet> from creating its own grid item.
+   This ensures the routed component itself occupies the second grid row,
+   avoiding an empty spacer above the real content. */
+router-outlet {
+  display: contents;
 }
 
 .spacer {

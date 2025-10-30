@@ -155,10 +155,18 @@ type NonEnglishLanguage = Exclude<LanguageCode, 'en'>;
   `,
   styles: [
     `
+      :host {
+        display: block;
+        height: 100%;
+      }
       .container {
         padding: 16px;
         display: grid;
         gap: 16px;
+        height: 100%;
+        overflow: auto; /* scroll inside content track, toolbar stays fixed */
+        max-width: 920px;
+        margin: 0 auto;
       }
       .header {
         display: flex;

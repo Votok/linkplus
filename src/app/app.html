@@ -8,9 +8,9 @@
 <!-- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * -->
 
 <mat-toolbar color="primary">
-  <a mat-button routerLink="/" *ngIf="auth.isLoggedIn$ | async; else titleOnly">LinkPlus</a>
+  <a mat-button routerLink="/" *ngIf="auth.isLoggedIn$ | async; else titleOnly">Link+</a>
   <ng-template #titleOnly>
-    <span>LinkPlus</span>
+    <span>Link+</span>
   </ng-template>
   <span class="spacer"></span>
   <button mat-button *ngIf="auth.isLoggedIn$ | async" (click)="onLogout()">Logout</button>

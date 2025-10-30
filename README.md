@@ -83,7 +83,7 @@ To start a local development server, run:
 npm start
 ```
 
-Then open your browser at `http://localhost:4200/`. The application will automatically reload when you modify source files.
+Then open your browser at `http://localhost:4201/`. The application will automatically reload when you modify source files.
 
 ## Code scaffolding
 

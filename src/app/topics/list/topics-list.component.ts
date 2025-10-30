@@ -18,13 +18,13 @@ import { take } from 'rxjs';
         <h2>Topics</h2>
         <button mat-flat-button color="primary" (click)="addTopic()">
           <mat-icon>add</mat-icon>
-          Add Topic
+          Add New Topic
         </button>
       </div>
 
       <mat-divider />
 
-      <mat-list>
+      <mat-list class="list">
         @for (t of topics(); track t.id) {
         <mat-list-item>
           <div matListItemTitle>{{ t.name }}</div>
@@ -50,24 +50,37 @@ import { take } from 'rxjs';
       </mat-list>
 
       @if (topics()?.length === 0) {
-      <p class="hint">No topics yet. Use "Add Topic" to create one.</p>
+      <p class="hint">No topics yet. Use "Add New Topic" to create one.</p>
       }
     </div>
   `,
   styles: [
     `
+      :host {
+        display: block;
+        height: 100%;
+      }
       .container {
         padding: 16px;
         display: grid;
         gap: 12px;
+        height: 100%;
+        grid-template-rows: auto auto 1fr auto;
+        max-width: 920px;
+        margin: 0 auto;
       }
       .header {
         display: flex;
         align-items: center;
         gap: 12px;
+        justify-content: space-between;
       }
       .spacer {
         flex: 1 1 auto;
+      }
+      .list {
+        overflow: auto;
+        -webkit-overflow-scrolling: touch;
       }
       .actions {
         display: inline-flex;
