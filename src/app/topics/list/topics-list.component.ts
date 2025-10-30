@@ -30,20 +30,23 @@ import { take } from 'rxjs';
           <div matListItemTitle>{{ t.name }}</div>
           <!-- <div matListItemLine>{{ t.description || 'No description' }}</div> -->
           <div matListItemMeta class="actions">
-            <button
-              mat-icon-button
-              [routerLink]="['/print']"
-              [queryParams]="{ topic: t.id }"
-              aria-label="Print"
-            >
-              <mat-icon>print</mat-icon>
-            </button>
-            <button mat-icon-button [routerLink]="['/topics', t.id, 'edit']" aria-label="Edit">
+            <button mat-flat-button color="primary" [routerLink]="['/topics', t.id, 'edit']">
               <mat-icon>edit</mat-icon>
+              Edit
             </button>
-            <button mat-icon-button color="warn" (click)="deleteTopic(t)" aria-label="Delete">
-              <mat-icon>delete</mat-icon>
+            <button mat-stroked-button [routerLink]="['/print']" [queryParams]="{ topic: t.id }">
+              <mat-icon>print</mat-icon>
+              Print
             </button>
+            <button mat-icon-button [matMenuTriggerFor]="menu" aria-label="More actions">
+              <mat-icon>more_vert</mat-icon>
+            </button>
+            <mat-menu #menu="matMenu">
+              <button mat-menu-item (click)="deleteTopic(t)" class="menu-warn">
+                <mat-icon>delete</mat-icon>
+                <span>Delete</span>
+              </button>
+            </mat-menu>
           </div>
         </mat-list-item>
         }
@@ -86,6 +89,10 @@ import { take } from 'rxjs';
         display: inline-flex;
         gap: 8px;
         align-items: center;
+        flex-wrap: wrap;
+      }
+      .menu-warn {
+        color: var(--mdc-theme-error, #d32f2f);
       }
       .hint {
         opacity: 0.7;

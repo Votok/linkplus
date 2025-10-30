@@ -14,7 +14,10 @@ body {
 
 .content {
   min-height: 0; /* allow child overflow to be measured correctly in grid */
-  overflow: hidden; /* default: child pages opt-in to scroll where needed */
+  /* Allow horizontal full-bleed sections (e.g., editor images) to escape
+     the centered page width without creating window scrollbars. */
+  overflow-y: hidden; /* pages handle their own vertical scrolling */
+  overflow-x: visible; /* enable full-bleed blocks */
 }
 
 /* Keep the top bar visible while the page/content scrolls */

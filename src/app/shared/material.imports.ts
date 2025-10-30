@@ -10,6 +10,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatListModule } from '@angular/material/list';
 import { MatSelectModule } from '@angular/material/select';
 import { MatDividerModule } from '@angular/material/divider';
+import { MatMenuModule } from '@angular/material/menu';
 
 // Convenience array of commonly used Material modules for standalone components.
 export const MATERIAL_IMPORTS = [
@@ -25,4 +26,5 @@ export const MATERIAL_IMPORTS = [
   MatListModule,
   MatSelectModule,
   MatDividerModule,
+  MatMenuModule,
 ];

@@ -39,60 +39,81 @@ type NonEnglishLanguage = Exclude<LanguageCode, 'en'>;
   ],
   template: `
     @if (topic(); as t) {
-    <div class="container">
-      <div class="header">
-        <h2>Edit Topic</h2>
-        <span class="topic-id">#{{ t.id }}</span>
-        <span class="spacer"></span>
-        <a mat-stroked-button color="primary" [routerLink]="['/topics']">
-          <mat-icon>arrow_back</mat-icon>
-          Back to list
-        </a>
+    <div class="page">
+      <div class="container">
+        <div class="header">
+          <h2>Edit Topic</h2>
+          <span class="topic-id">#{{ t.id }}</span>
+          <span class="spacer"></span>
+          <a mat-stroked-button color="primary" [routerLink]="['/topics']">
+            <mat-icon>arrow_back</mat-icon>
+            Back to list
+          </a>
+        </div>
+        <mat-divider />
+
+        <form [formGroup]="form" class="form" (ngSubmit)="onSave()">
+          <mat-form-field appearance="outline">
+            <mat-label>Topic name</mat-label>
+            <input matInput formControlName="name" />
+            <mat-error *ngIf="form.controls.name.invalid">Name is required</mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full">
+            <mat-label>Description (Markdown)</mat-label>
+            <textarea matInput formControlName="description" rows="8"></textarea>
+          </mat-form-field>
+
+          <div class="preview">
+            <h3>Markdown preview</h3>
+            <markdown [data]="form.controls.description.value || ''"></markdown>
+          </div>
+
+          <div class="actions">
+            <button mat-flat-button color="primary" [disabled]="form.invalid || saving">
+              Save
+            </button>
+          </div>
+        </form>
+
+        <mat-divider />
+
+        <!-- Images toolbar moved back into the narrow container -->
+        <section class="images-controls">
+          <div class="images-toolbar">
+            <h3>Images</h3>
+            <span class="spacer"></span>
+            <mat-form-field appearance="outline">
+              <mat-label>Working language</mat-label>
+              <mat-select [value]="selectedLang()" (valueChange)="selectedLang.set($event)">
+                @for (l of langs; track l) {
+                <mat-option [value]="l">{{ languageLabel(l) }} ({{ l.toUpperCase() }})</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+
+            <button
+              mat-flat-button
+              color="primary"
+              (click)="fileInput.click()"
+              [disabled]="uploading || t.images.length >= 10"
+            >
+              <mat-icon>upload</mat-icon>
+              Upload Image
+            </button>
+            <input
+              #fileInput
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              (change)="onFileSelected($event)"
+              class="file-input"
+            />
+          </div>
+        </section>
+        <mat-divider />
       </div>
-      <mat-divider />
-
-      <form [formGroup]="form" class="form" (ngSubmit)="onSave()">
-        <mat-form-field appearance="outline">
-          <mat-label>Topic name</mat-label>
-          <input matInput formControlName="name" />
-          <mat-error *ngIf="form.controls.name.invalid">Name is required</mat-error>
-        </mat-form-field>
-
-        <mat-form-field appearance="outline" class="full">
-          <mat-label>Description (Markdown)</mat-label>
-          <textarea matInput formControlName="description" rows="8"></textarea>
-        </mat-form-field>
-
-        <div class="preview">
-          <h3>Markdown preview</h3>
-          <markdown [data]="form.controls.description.value || ''"></markdown>
-        </div>
-
-        <div class="actions">
-          <button mat-flat-button color="primary" [disabled]="form.invalid || saving">Save</button>
-        </div>
-      </form>
-
-      <mat-divider />
 
       <section class="images">
-        <h3>Images</h3>
-        <div class="controls">
-          <mat-form-field appearance="outline">
-            <mat-label>Working language</mat-label>
-            <mat-select [value]="selectedLang()" (valueChange)="selectedLang.set($event)">
-              @for (l of langs; track l) {
-              <mat-option [value]="l">{{ languageLabel(l) }} ({{ l.toUpperCase() }})</mat-option>
-              }
-            </mat-select>
-          </mat-form-field>
-        </div>
-        <input
-          type="file"
-          accept="image/jpeg,image/png,image/webp"
-          (change)="onFileSelected($event)"
-          [disabled]="uploading || t.images.length >= 10"
-        />
         <div
           class="grid"
           cdkDropList
@@ -159,14 +180,36 @@ type NonEnglishLanguage = Exclude<LanguageCode, 'en'>;
         display: block;
         height: 100%;
       }
+      .page {
+        height: 100%;
+        overflow-y: auto; /* single vertical scroll container for the page */
+        overflow-x: visible; /* allow full-bleed children */
+      }
       .container {
         padding: 16px;
         display: grid;
         gap: 16px;
-        height: 100%;
-        overflow: auto; /* scroll inside content track, toolbar stays fixed */
         max-width: 920px;
         margin: 0 auto;
+      }
+      .images-controls {
+        margin-top: 16px;
+      }
+      .images-toolbar {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .file-input {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
       }
       .header {
         display: flex;
@@ -200,6 +243,16 @@ type NonEnglishLanguage = Exclude<LanguageCode, 'en'>;
       .images {
         display: grid;
         gap: 12px;
+        /* Full-bleed row: expand to viewport width while remaining inside the scrolling container */
+        width: 100vw;
+        margin-left: calc(50% - 50vw);
+        margin-right: calc(50% - 50vw);
+        padding-inline: 16px; /* match page gutter */
+        padding-block: 12px; /* touch-friendly space above and below */
+        box-sizing: border-box;
+        overflow-x: auto; /* make the full-bleed section the horizontal scroller */
+        overscroll-behavior-x: contain;
+        -webkit-overflow-scrolling: touch;
       }
       .images .controls {
         display: flex;
@@ -207,14 +260,14 @@ type NonEnglishLanguage = Exclude<LanguageCode, 'en'>;
         align-items: center;
       }
       .grid {
-        display: flex;
+        display: inline-flex; /* shrink-wrap to its content so parent handles scrolling */
         flex-wrap: nowrap; /* keep a single row */
         gap: 16px;
         align-items: stretch;
-        overflow-x: auto;
-        overscroll-behavior-x: contain;
-        -webkit-overflow-scrolling: touch;
-        padding-bottom: 4px; /* space for scrollbar on some platforms */
+        min-width: max-content; /* let cards define the natural width */
+        overflow: visible; /* parent (.images) owns scrolling */
+        padding-block: 12px; /* extra space to reduce accidental drag */
+        touch-action: pan-x; /* prefer horizontal panning over drag */
       }
       .card {
         border: 1px solid rgba(0, 0, 0, 0.12);
