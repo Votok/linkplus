@@ -1,4 +1,4 @@
-import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
+import { Component, DestroyRef, OnInit, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -23,8 +23,6 @@ const LANGUAGE_LABELS: Record<LanguageCode, string> = {
   cs: 'Čeština',
   es: 'Español',
 };
-type NonEnglishLanguage = Exclude<LanguageCode, 'en'>;
-
 @Component({
   standalone: true,
   selector: 'app-topic-editor',
@@ -39,139 +37,144 @@ type NonEnglishLanguage = Exclude<LanguageCode, 'en'>;
   ],
   template: `
     @if (topic(); as t) {
-    <div class="page">
-      <div class="container">
-        <div class="header">
-          <h2>Edit Topic</h2>
-          <span class="topic-id">#{{ t.id }}</span>
-          <span class="spacer"></span>
-          <a mat-stroked-button color="primary" [routerLink]="['/topics']">
-            <mat-icon>arrow_back</mat-icon>
-            Back to list
-          </a>
-        </div>
-        <mat-divider />
-
-        <form [formGroup]="form" class="form" (ngSubmit)="onSave()">
-          <mat-form-field appearance="outline">
-            <mat-label>Topic name</mat-label>
-            <input matInput formControlName="name" />
-            <mat-error *ngIf="form.controls.name.invalid">Name is required</mat-error>
-          </mat-form-field>
-
-          <mat-form-field appearance="outline" class="full">
-            <mat-label>Description (Markdown)</mat-label>
-            <textarea matInput formControlName="description" rows="8"></textarea>
-          </mat-form-field>
-
-          <div class="preview">
-            <h3>Markdown preview</h3>
-            <markdown [data]="form.controls.description.value || ''"></markdown>
-          </div>
-
-          <div class="actions">
-            <button mat-flat-button color="primary" [disabled]="form.invalid || saving">
-              Save
-            </button>
-          </div>
-        </form>
-
-        <mat-divider />
-
-        <!-- Images toolbar moved back into the narrow container -->
-        <section class="images-controls">
-          <div class="images-toolbar">
-            <h3>Images</h3>
+      <div class="page">
+        <div class="container">
+          <div class="header">
+            <h2>Edit Topic</h2>
+            <span class="topic-id">#{{ t.id }}</span>
             <span class="spacer"></span>
+            <a mat-stroked-button color="primary" [routerLink]="['/topics']">
+              <mat-icon>arrow_back</mat-icon>
+              Back to list
+            </a>
+          </div>
+          <mat-divider />
+
+          <div class="lang-selector">
             <mat-form-field appearance="outline">
               <mat-label>Working language</mat-label>
               <mat-select [value]="selectedLang()" (valueChange)="selectedLang.set($event)">
                 @for (l of langs; track l) {
-                <mat-option [value]="l">{{ languageLabel(l) }} ({{ l.toUpperCase() }})</mat-option>
+                  <mat-option [value]="l"
+                    >{{ languageLabel(l) }} ({{ l.toUpperCase() }})</mat-option
+                  >
                 }
               </mat-select>
             </mat-form-field>
-
-            <button
-              mat-flat-button
-              color="primary"
-              (click)="fileInput.click()"
-              [disabled]="uploading || t.images.length >= 10"
-            >
-              <mat-icon>upload</mat-icon>
-              Upload Image
-            </button>
-            <input
-              #fileInput
-              type="file"
-              accept="image/jpeg,image/png,image/webp"
-              (change)="onFileSelected($event)"
-              class="file-input"
-            />
           </div>
-        </section>
-        <mat-divider />
-      </div>
 
-      <section class="images">
-        <div
-          class="grid"
-          cdkDropList
-          [cdkDropListData]="t.images"
-          [cdkDropListDisabled]="uploading || deleting || saving || reordering"
-          cdkDropListOrientation="horizontal"
-          (cdkDropListDropped)="dropImages($event)"
-        >
-          @for (img of t.images; track img.id) {
-          <div
-            class="card"
-            cdkDrag
-            (cdkDragStarted)="onDragStart($event)"
-            (cdkDragEnded)="onDragEnd()"
-          >
-            <img [src]="img.url" [alt]="img.titles.en || 'image'" />
-            <div class="img-fields">
-              <mat-form-field appearance="outline">
-                <mat-label>Title (EN)</mat-label>
-                <input
-                  matInput
-                  [value]="img.titles.en || ''"
-                  (change)="onTitleChange(img, 'en', $any($event.target).value)"
-                />
-              </mat-form-field>
-              <mat-form-field appearance="outline">
-                <mat-label>Title ({{ selectedLang().toUpperCase() }})</mat-label>
-                <input
-                  matInput
-                  [value]="img.titles[selectedLang()] || ''"
-                  (change)="onTitleChange(img, selectedLang(), $any($event.target).value)"
-                />
-              </mat-form-field>
-              <div class="row-actions">
-                <button mat-stroked-button color="warn" (click)="deleteImage(img)">
-                  <mat-icon>delete</mat-icon>
-                  Remove
-                </button>
-              </div>
+          <form [formGroup]="form" class="form" (ngSubmit)="onSave()">
+            @if (selectedLang() !== 'en' && topic()?.name?.en) {
+              <div class="en-hint">EN: {{ topic()!.name.en }}</div>
+            }
+            <mat-form-field appearance="outline">
+              <mat-label>Topic name</mat-label>
+              <input matInput formControlName="name" />
+              <mat-error *ngIf="form.controls.name.invalid">Name is required</mat-error>
+            </mat-form-field>
+
+            @if (selectedLang() !== 'en' && topic()?.description?.en) {
+              <div class="en-hint">EN: {{ topic()!.description.en }}</div>
+            }
+            <mat-form-field appearance="outline" class="full">
+              <mat-label>Description (Markdown)</mat-label>
+              <textarea matInput formControlName="description" rows="8"></textarea>
+            </mat-form-field>
+
+            <div class="preview">
+              <h3>Markdown preview</h3>
+              <markdown [data]="form.controls.description.value || ''"></markdown>
             </div>
 
-            <ng-template cdkDragPlaceholder>
-              <div class="card placeholder">
-                <div class="ph-image"></div>
-                <div class="ph-fields"></div>
-              </div>
-            </ng-template>
+            <div class="actions">
+              <button mat-flat-button color="primary" [disabled]="form.invalid || saving">
+                Save
+              </button>
+            </div>
+          </form>
 
-            <ng-template cdkDragPreview>
-              <div class="card preview" [style.width.px]="dragPreviewWidth">
-                <img [src]="img.url" [alt]="img.titles.en || 'image'" />
-              </div>
-            </ng-template>
-          </div>
-          }
+          <mat-divider />
+
+          <!-- Images toolbar moved back into the narrow container -->
+          <section class="images-controls">
+            <div class="images-toolbar">
+              <h3>Images</h3>
+              <span class="spacer"></span>
+              <button
+                mat-flat-button
+                color="primary"
+                (click)="fileInput.click()"
+                [disabled]="uploading || t.images.length >= 10"
+              >
+                <mat-icon>upload</mat-icon>
+                Upload Image
+              </button>
+              <input
+                #fileInput
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                (change)="onFileSelected($event)"
+                class="file-input"
+              />
+            </div>
+          </section>
+          <mat-divider />
         </div>
-      </section>
-    </div>
+
+        <section class="images">
+          <div
+            class="grid"
+            cdkDropList
+            [cdkDropListData]="t.images"
+            [cdkDropListDisabled]="uploading || deleting || saving || reordering"
+            cdkDropListOrientation="horizontal"
+            (cdkDropListDropped)="dropImages($event)"
+          >
+            @for (img of t.images; track img.id) {
+              <div
+                class="card"
+                cdkDrag
+                (cdkDragStarted)="onDragStart($event)"
+                (cdkDragEnded)="onDragEnd()"
+              >
+                <img [src]="img.url" [alt]="img.titles.en || 'image'" />
+                <div class="img-fields">
+                  @if (selectedLang() !== 'en' && img.titles.en) {
+                    <div class="en-hint">EN: {{ img.titles.en }}</div>
+                  }
+                  <mat-form-field appearance="outline">
+                    <mat-label>Title ({{ selectedLang().toUpperCase() }})</mat-label>
+                    <input
+                      matInput
+                      [value]="img.titles[selectedLang()] || ''"
+                      (change)="onTitleChange(img, selectedLang(), $any($event.target).value)"
+                    />
+                  </mat-form-field>
+                  <div class="row-actions">
+                    <button mat-stroked-button color="warn" (click)="deleteImage(img)">
+                      <mat-icon>delete</mat-icon>
+                      Remove
+                    </button>
+                  </div>
+                </div>
+
+                <ng-template cdkDragPlaceholder>
+                  <div class="card placeholder">
+                    <div class="ph-image"></div>
+                    <div class="ph-fields"></div>
+                  </div>
+                </ng-template>
+
+                <ng-template cdkDragPreview>
+                  <div class="card preview" [style.width.px]="dragPreviewWidth">
+                    <img [src]="img.url" [alt]="img.titles.en || 'image'" />
+                  </div>
+                </ng-template>
+              </div>
+            }
+          </div>
+        </section>
+      </div>
     }
   `,
   styles: [
@@ -239,6 +242,18 @@ type NonEnglishLanguage = Exclude<LanguageCode, 'en'>;
       .actions {
         display: flex;
         gap: 12px;
+      }
+      .lang-selector {
+        margin-top: 8px;
+      }
+      .en-hint {
+        background: #f5f5f5;
+        border-left: 3px solid #90caf9;
+        padding: 6px 12px;
+        font-size: 0.85em;
+        color: #616161;
+        border-radius: 4px;
+        margin-bottom: -8px;
       }
       .images {
         display: grid;
@@ -342,18 +357,23 @@ export class TopicEditorComponent implements OnInit {
   deleting = false;
   dragPreviewWidth = 0;
 
-  readonly langs: NonEnglishLanguage[] = SUPPORTED_LANGUAGES.filter(
-    (l) => l !== 'en'
-  ) as NonEnglishLanguage[];
-  readonly selectedLang = signal<NonEnglishLanguage>(
-    this.langs.includes('cs' as NonEnglishLanguage)
-      ? ('cs' as NonEnglishLanguage)
-      : this.langs[0] ?? ('cs' as NonEnglishLanguage)
-  );
+  readonly langs: LanguageCode[] = SUPPORTED_LANGUAGES;
+  readonly selectedLang = signal<LanguageCode>('en');
 
   readonly form = this.fb.nonNullable.group({
     name: ['', Validators.required],
     description: [''],
+  });
+
+  private readonly patchOnLangChange = effect(() => {
+    const t = this.topic();
+    const lang = this.selectedLang();
+    if (t) {
+      this.form.patchValue(
+        { name: t.name[lang] ?? '', description: t.description[lang] ?? '' },
+        { emitEvent: false },
+      );
+    }
   });
 
   ngOnInit(): void {
@@ -368,19 +388,13 @@ export class TopicEditorComponent implements OnInit {
         distinctUntilChanged(),
         tap((id) => this.id.set(id)),
         switchMap((id) => this.topics.get$(id)),
-        takeUntilDestroyed(this.destroyRef)
+        takeUntilDestroyed(this.destroyRef),
       )
       .subscribe((t) => {
         this.topic.set(t ?? null);
         if (firstEmission) {
           this.loading.end();
           firstEmission = false;
-        }
-        if (t) {
-          this.form.patchValue(
-            { name: t.name.en, description: t.description.en ?? '' },
-            { emitEvent: false }
-          );
         }
       });
   }
@@ -394,9 +408,9 @@ export class TopicEditorComponent implements OnInit {
       // Ensure the global overlay is visible for this explicit save action
       this.loading.beginImmediate(180);
       const formValue = this.form.getRawValue();
-      // Merge form values (currently EN only) into the existing LocalizedTitles
-      const name = { ...current.name, en: formValue.name };
-      const description = { ...current.description, en: formValue.description };
+      const lang = this.selectedLang();
+      const name = { ...current.name, [lang]: formValue.name };
+      const description = { ...current.description, [lang]: formValue.description };
       await this.topics.update(id, { name, description });
       this.snack.open('Topic saved', 'OK', { duration: 1500 });
     } catch {
@@ -432,7 +446,7 @@ export class TopicEditorComponent implements OnInit {
     const topic = this.topic();
     if (!id || !topic) return;
     const images = (topic.images || []).map((i) =>
-      i.id === img.id ? { ...i, titles: { ...i.titles, [lang]: value } } : i
+      i.id === img.id ? { ...i, titles: { ...i.titles, [lang]: value } } : i,
     );
     this.loading.beginImmediate(150);
     try {

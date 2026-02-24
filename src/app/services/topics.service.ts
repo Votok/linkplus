@@ -199,9 +199,7 @@ function refFromPath(storage: Storage, path: string) {
 }
 
 function trimLocalized(obj: LocalizedTitles): LocalizedTitles {
-  return Object.fromEntries(
-    Object.entries(obj).map(([k, v]) => [k, v.trim()]),
-  ) as LocalizedTitles;
+  return Object.fromEntries(Object.entries(obj).map(([k, v]) => [k, v.trim()])) as LocalizedTitles;
 }
 
 function extractIndex(name: LocalizedTitles | string): number {
@@ -209,5 +207,3 @@ function extractIndex(name: LocalizedTitles | string): number {
   const match = raw.match(/^(\d+)/);
   return match ? parseInt(match[1], 10) : 0;
 }
-
-

@@ -26,34 +26,34 @@ import { take } from 'rxjs';
 
       <mat-list class="list">
         @for (t of topics(); track t.id) {
-        <mat-list-item>
-          <div matListItemTitle>{{ t.name.en }}</div>
-          <!-- <div matListItemLine>{{ t.description || 'No description' }}</div> -->
-          <div matListItemMeta class="actions">
-            <button mat-flat-button color="primary" [routerLink]="['/topics', t.id, 'edit']">
-              <mat-icon>edit</mat-icon>
-              Edit
-            </button>
-            <button mat-stroked-button [routerLink]="['/print']" [queryParams]="{ topic: t.id }">
-              <mat-icon>print</mat-icon>
-              Print
-            </button>
-            <button mat-icon-button [matMenuTriggerFor]="menu" aria-label="More actions">
-              <mat-icon>more_vert</mat-icon>
-            </button>
-            <mat-menu #menu="matMenu">
-              <button mat-menu-item (click)="deleteTopic(t)" class="menu-warn">
-                <mat-icon>delete</mat-icon>
-                <span>Delete</span>
+          <mat-list-item>
+            <div matListItemTitle>{{ t.name.en }}</div>
+            <!-- <div matListItemLine>{{ t.description || 'No description' }}</div> -->
+            <div matListItemMeta class="actions">
+              <button mat-flat-button color="primary" [routerLink]="['/topics', t.id, 'edit']">
+                <mat-icon>edit</mat-icon>
+                Edit
               </button>
-            </mat-menu>
-          </div>
-        </mat-list-item>
+              <button mat-stroked-button [routerLink]="['/print']" [queryParams]="{ topic: t.id }">
+                <mat-icon>print</mat-icon>
+                Print
+              </button>
+              <button mat-icon-button [matMenuTriggerFor]="menu" aria-label="More actions">
+                <mat-icon>more_vert</mat-icon>
+              </button>
+              <mat-menu #menu="matMenu">
+                <button mat-menu-item (click)="deleteTopic(t)" class="menu-warn">
+                  <mat-icon>delete</mat-icon>
+                  <span>Delete</span>
+                </button>
+              </mat-menu>
+            </div>
+          </mat-list-item>
         }
       </mat-list>
 
       @if (topics()?.length === 0) {
-      <p class="hint">No topics yet. Use "Add New Topic" to create one.</p>
+        <p class="hint">No topics yet. Use "Add New Topic" to create one.</p>
       }
     </div>
   `,
@@ -122,7 +122,10 @@ export class TopicsListComponent implements OnInit {
   async addTopic() {
     this.loading.beginImmediate(180);
     try {
-      const id = await this.topicsService.create({ name: { en: 'New Topic', cs: '', es: '' }, description: { en: '', cs: '', es: '' } });
+      const id = await this.topicsService.create({
+        name: { en: 'New Topic', cs: '', es: '' },
+        description: { en: '', cs: '', es: '' },
+      });
       await this.router.navigate(['/topics', id, 'edit']);
     } finally {
       this.loading.end();
