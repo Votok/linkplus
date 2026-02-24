@@ -3,14 +3,15 @@ import { CommonModule } from '@angular/common';
 import { MATERIAL_IMPORTS } from '../shared/material.imports';
 import { TopicsService } from '../services/topics.service';
 import { AsyncPipe } from '@angular/common';
-import { Topic, ImageMeta } from '../shared/models';
+import { Topic, ImageMeta, LanguageCode } from '../shared/models';
 import { ActivatedRoute } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { MarkdownModule } from 'ngx-markdown';
 
 @Component({
   standalone: true,
   selector: 'app-print',
-  imports: [CommonModule, AsyncPipe, ...MATERIAL_IMPORTS],
+  imports: [CommonModule, AsyncPipe, MarkdownModule, ...MATERIAL_IMPORTS],
   template: `
     <div class="container">
       <div class="controls no-print">
@@ -39,8 +40,15 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
       </div>
 
       @if (currentTopic(); as topic) {
-        <div class="print-page">
-          <h1 class="title">{{ topic.name[lang] }}</h1>
+        <div class="print-page cover-page">
+          <h1 class="cover-title">{{ topic.name[lang] }}</h1>
+          <div class="cover-description">
+            <markdown [data]="getDescription()"></markdown>
+          </div>
+        </div>
+
+        <div class="print-page images-page">
+          <h2 class="images-title">{{ topic.name[lang] }}</h2>
           <div class="images">
             @for (img of topic.images; track img.id) {
               <div class="img">
@@ -73,9 +81,30 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
         min-height: 297mm;
         box-shadow: 0 0 0.5mm rgba(0, 0, 0, 0.1);
       }
-      .title {
+      .print-page + .print-page {
+        margin-top: 24px;
+      }
+      /* Cover page */
+      .cover-page {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+      }
+      .cover-title {
+        font-size: 24pt;
         text-align: center;
         margin-bottom: 12mm;
+      }
+      .cover-description {
+        max-width: 100%;
+        font-size: 12pt;
+        line-height: 1.6;
+      }
+      /* Images page */
+      .images-title {
+        text-align: center;
+        margin-bottom: 8mm;
       }
       .images {
         display: grid;
@@ -107,26 +136,40 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
           padding: 10mm;
           width: auto;
           min-height: auto;
-          /* Title hidden in print, reserve no space */
-          --title-block: 0mm;
+        }
+        .print-page + .print-page {
+          margin-top: 0;
         }
 
-        /* Hide headline on printed page */
-        .print-page .title {
-          display: none;
+        /* Cover page: fill one A4 page, then break */
+        .cover-page {
+          page-break-after: always;
+          min-height: calc(100vh - 20mm);
+        }
+        .cover-title {
+          font-size: 24pt;
+        }
+        .cover-description {
+          font-size: 12pt;
+        }
+
+        /* Images page title visible in print */
+        .images-title {
+          font-size: 14pt;
+          margin-bottom: 4mm;
         }
 
         /* 2×4 grid per A4 page with table-like lines */
-        .print-page .images {
+        .images-page .images {
           grid-template-columns: 1fr 1fr;
           gap: 0; /* use borders as dividers instead of gaps */
           /* No outer border; keep only internal separators */
           box-sizing: border-box;
-          /* Four uniform rows that fill the printable height minus page paddings */
-          grid-auto-rows: calc((100vh - 20mm) / 4);
+          /* Four uniform rows that fill the printable height minus page paddings and title */
+          grid-auto-rows: calc((100vh - 20mm - 12mm) / 4);
         }
 
-        .print-page .images > .img {
+        .images-page .images > .img {
           display: flex;
           flex-direction: column;
           box-sizing: border-box;
@@ -136,16 +179,16 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
         }
 
         /* Single vertical divider between the two columns */
-        .print-page .images > .img:nth-child(2n) {
+        .images-page .images > .img:nth-child(2n) {
           border-left: 0.2mm solid #000;
         }
         /* Horizontal dividers between rows 1-2, 2-3, 3-4 */
-        .print-page .images > .img:not(:nth-child(-n + 2)) {
+        .images-page .images > .img:not(:nth-child(-n + 2)) {
           border-top: 0.2mm solid #000;
         }
 
         /* Image scales within fixed cell, caption keeps its size */
-        .print-page .images > .img img {
+        .images-page .images > .img img {
           flex: 1 1 auto;
           width: 100%;
           height: 100%;
@@ -153,7 +196,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
           min-height: 0;
           display: block;
         }
-        .print-page .caption {
+        .images-page .caption {
           font-size: 12pt; /* keep captions unchanged */
           line-height: 1.2;
           margin-top: 2mm;
@@ -177,7 +220,7 @@ export class PrintComponent {
   readonly topicsList = signal<Topic[]>([]);
 
   selectedTopicId = signal<string | null>(null);
-  lang: 'en' | 'cs' | 'es' = 'en';
+  lang: LanguageCode = 'en';
 
   readonly currentTopic = computed<Topic | null>(() => {
     const id = this.selectedTopicId();
@@ -202,6 +245,11 @@ export class PrintComponent {
 
   getTitle(img: ImageMeta): string {
     return (img?.titles?.[this.lang] || '').trim();
+  }
+
+  getDescription(): string {
+    const topic = this.currentTopic();
+    return topic?.description?.[this.lang] ?? '';
   }
 
   print() {
