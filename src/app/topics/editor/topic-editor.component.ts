@@ -1,4 +1,4 @@
-import { Component, DestroyRef, OnInit, effect, inject, signal } from '@angular/core';
+import { Component, DestroyRef, OnInit, computed, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -10,6 +10,7 @@ import {
   Topic,
   LanguageCode,
   SUPPORTED_LANGUAGES,
+  GRADES,
 } from '../../shared/models';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { filter, map, switchMap, tap, distinctUntilChanged } from 'rxjs';
@@ -42,6 +43,7 @@ const LANGUAGE_LABELS: Record<LanguageCode, string> = {
           <div class="header">
             <h2>Edit Topic</h2>
             <span class="topic-id">#{{ t.id }}</span>
+            <mat-chip>{{ gradeName() }}</mat-chip>
             <span class="spacer"></span>
             <a mat-stroked-button color="primary" [routerLink]="['/topics']">
               <mat-icon>arrow_back</mat-icon>
@@ -381,6 +383,11 @@ export class TopicEditorComponent implements OnInit {
 
   readonly id = signal<string | null>(null);
   readonly topic = signal<Topic | null>(null);
+  readonly gradeName = computed(() => {
+    const t = this.topic();
+    if (!t) return '';
+    return GRADES.find((g) => g.id === t.gradeId)?.name ?? t.gradeId;
+  });
   saving = false;
   uploading = false;
   reordering = false;

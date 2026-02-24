@@ -22,6 +22,7 @@ export interface ImageMeta {
 
 export interface Topic {
   id: string;
+  gradeId: string;
   name: LocalizedTitles;
   description: LocalizedTitles;
   images: ImageMeta[];
@@ -31,3 +32,16 @@ export interface Topic {
 }
 
 export const SUPPORTED_LANGUAGES: LanguageCode[] = ['en', 'cs', 'es'];
+
+export interface Grade {
+  id: string;
+  name: string;
+}
+
+export const GRADES: Grade[] = [
+  { id: 'junior-kinder', name: 'Junior Kinder' },
+  { id: 'senior-kinder', name: 'Senior Kinder' },
+  { id: 'grade-1', name: 'Grade 1' },
+  { id: 'grade-2', name: 'Grade 2' },
+  { id: 'grade-3', name: 'Grade 3' },
+];

@@ -1,12 +1,12 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { MATERIAL_IMPORTS } from '../../shared/material.imports';
 import { TopicsService } from '../../services/topics.service';
-import { Topic } from '../../shared/models';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { Topic, GRADES } from '../../shared/models';
+import { toSignal, toObservable } from '@angular/core/rxjs-interop';
 import { LoadingService } from '../../services/loading.service';
-import { take } from 'rxjs';
+import { take, switchMap } from 'rxjs';
 
 @Component({
   standalone: true,
@@ -21,6 +21,15 @@ import { take } from 'rxjs';
           Add New Topic
         </button>
       </div>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Grade</mat-label>
+        <mat-select [value]="selectedGradeId()" (valueChange)="selectedGradeId.set($event)">
+          @for (g of grades; track g.id) {
+            <mat-option [value]="g.id">{{ g.name }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
 
       <mat-divider />
 
@@ -68,7 +77,7 @@ import { take } from 'rxjs';
         display: grid;
         gap: 12px;
         height: 100%;
-        grid-template-rows: auto auto 1fr auto;
+        grid-template-rows: auto auto auto 1fr;
         max-width: 920px;
         margin: 0 auto;
       }
@@ -105,13 +114,18 @@ export class TopicsListComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly loading = inject(LoadingService);
 
-  readonly topics = toSignal(this.topicsService.list$());
+  readonly grades = GRADES;
+  readonly selectedGradeId = signal(GRADES[0].id);
+
+  private readonly topics$ = toObservable(this.selectedGradeId).pipe(
+    switchMap((gradeId) => this.topicsService.listByGrade$(gradeId)),
+  );
+  readonly topics = toSignal(this.topics$);
 
   ngOnInit(): void {
     // Show overlay until the first list emission arrives (immediate to avoid race/flicker)
     this.loading.beginImmediate(180);
-    this.topicsService
-      .list$()
+    this.topics$
       .pipe(take(1))
       .subscribe({
         next: () => this.loading.end(),
@@ -125,6 +139,7 @@ export class TopicsListComponent implements OnInit {
       const id = await this.topicsService.create({
         name: { en: 'New Topic', cs: '', es: '' },
         description: { en: '', cs: '', es: '' },
+        gradeId: this.selectedGradeId(),
       });
       await this.router.navigate(['/topics', id, 'edit']);
     } finally {
@@ -142,4 +157,5 @@ export class TopicsListComponent implements OnInit {
       this.loading.end();
     }
   }
+
 }

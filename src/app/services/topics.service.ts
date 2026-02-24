@@ -9,7 +9,7 @@ import {
   getDoc,
 } from 'firebase/firestore';
 import { Observable, map } from 'rxjs';
-import { Topic, ImageMeta, LocalizedTitles } from '../shared/models';
+import { Topic, ImageMeta, LocalizedTitles, GRADES } from '../shared/models';
 import { Storage } from '@angular/fire/storage';
 import { ref, uploadBytesResumable, getDownloadURL, deleteObject } from 'firebase/storage';
 import { LoadingService } from './loading.service';
@@ -52,12 +52,18 @@ export class TopicsService {
     );
   }
 
+  listByGrade$(gradeId: string): Observable<Topic[]> {
+    return this.list$().pipe(
+      map((topics) => topics.filter((t) => t.gradeId === gradeId)),
+    );
+  }
+
   get$(id: string): Observable<Topic | undefined> {
     const ref = doc(this.db, TOPICS_COLLECTION, id);
     return docData(ref, { idField: 'id' }) as Observable<Topic | undefined>;
   }
 
-  async create(data: { name: LocalizedTitles; description: LocalizedTitles }): Promise<string> {
+  async create(data: { name: LocalizedTitles; description: LocalizedTitles; gradeId: string }): Promise<string> {
     this.loading.begin();
     try {
       const id = newId();
@@ -65,6 +71,7 @@ export class TopicsService {
       const now = serverTimestamp();
       await setDoc(ref, {
         id,
+        gradeId: data.gradeId,
         name: trimLocalized(data.name),
         description: trimLocalized(data.description),
         images: [],

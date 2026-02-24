@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { MATERIAL_IMPORTS } from '../shared/material.imports';
 import { TopicsService } from '../services/topics.service';
 import { AsyncPipe } from '@angular/common';
-import { Topic, ImageMeta, LanguageCode } from '../shared/models';
+import { Topic, ImageMeta, LanguageCode, GRADES } from '../shared/models';
 import { ActivatedRoute } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MarkdownModule } from 'ngx-markdown';
@@ -16,9 +16,18 @@ import { MarkdownModule } from 'ngx-markdown';
     <div class="container">
       <div class="controls no-print">
         <mat-form-field appearance="outline">
+          <mat-label>Grade</mat-label>
+          <mat-select [value]="selectedGradeId()" (valueChange)="onGradeChange($event)">
+            @for (g of grades; track g.id) {
+              <mat-option [value]="g.id">{{ g.name }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
           <mat-label>Topic</mat-label>
           <mat-select [value]="selectedTopicId()" (valueChange)="onTopicSelectionChange($event)">
-            @for (t of topics$ | async; track t.id) {
+            @for (t of filteredTopics(); track t.id) {
               <mat-option [value]="t.id">{{ t.name.en }}</mat-option>
             }
           </mat-select>
@@ -216,27 +225,50 @@ export class PrintComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
 
-  readonly topics$ = this.topics.list$();
+  readonly grades = GRADES;
   readonly topicsList = signal<Topic[]>([]);
 
+  selectedGradeId = signal(GRADES[0].id);
   selectedTopicId = signal<string | null>(null);
   lang: LanguageCode = 'en';
 
+  readonly filteredTopics = computed(() => {
+    const gradeId = this.selectedGradeId();
+    return this.topicsList().filter((t) => t.gradeId === gradeId);
+  });
+
   readonly currentTopic = computed<Topic | null>(() => {
     const id = this.selectedTopicId();
-    return this.topicsList().find((t) => t.id === id) ?? null;
+    return this.filteredTopics().find((t) => t.id === id) ?? null;
   });
 
   constructor() {
     const qpId = this.route.snapshot.queryParamMap.get('topic');
     if (qpId) this.selectedTopicId.set(qpId);
 
-    this.topics$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((list) => {
+    this.topics.list$().pipe(takeUntilDestroyed(this.destroyRef)).subscribe((list) => {
       this.topicsList.set(list);
-      if (!this.selectedTopicId() && list.length) {
-        this.selectedTopicId.set(list[0].id);
+
+      // If we have a query-param topic, derive its grade
+      const qpTopic = qpId ? list.find((t) => t.id === qpId) : null;
+      if (qpTopic) {
+        this.selectedGradeId.set(qpTopic.gradeId);
+      }
+
+      // Auto-select first topic in grade if none selected
+      if (!this.selectedTopicId() || !list.find((t) => t.id === this.selectedTopicId())) {
+        const filtered = list.filter((t) => t.gradeId === this.selectedGradeId());
+        if (filtered.length) {
+          this.selectedTopicId.set(filtered[0].id);
+        }
       }
     });
+  }
+
+  onGradeChange(gradeId: string) {
+    this.selectedGradeId.set(gradeId);
+    const filtered = this.topicsList().filter((t) => t.gradeId === gradeId);
+    this.selectedTopicId.set(filtered.length ? filtered[0].id : null);
   }
 
   onTopicSelectionChange(id: string) {
