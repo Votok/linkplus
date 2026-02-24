@@ -64,22 +64,33 @@ const LANGUAGE_LABELS: Record<LanguageCode, string> = {
           </div>
 
           <form [formGroup]="form" class="form" (ngSubmit)="onSave()">
-            @if (selectedLang() !== 'en' && topic()?.name?.en) {
-              <div class="en-hint">EN: {{ topic()!.name.en }}</div>
-            }
-            <mat-form-field appearance="outline">
-              <mat-label>Topic name</mat-label>
-              <input matInput formControlName="name" />
-              <mat-error *ngIf="form.controls.name.invalid">Name is required</mat-error>
-            </mat-form-field>
+            <div class="field-with-hint">
+              <mat-form-field appearance="outline">
+                <mat-label>Topic name</mat-label>
+                <input matInput formControlName="name" />
+                <mat-error *ngIf="form.controls.name.invalid">Name is required</mat-error>
+              </mat-form-field>
+              @if (selectedLang() !== 'en' && topic()?.name?.en) {
+                <span class="en-badge" [matTooltip]="topic()!.name.en" matTooltipPosition="above"
+                  >EN</span
+                >
+              }
+            </div>
 
-            @if (selectedLang() !== 'en' && topic()?.description?.en) {
-              <div class="en-hint">EN: {{ topic()!.description.en }}</div>
-            }
-            <mat-form-field appearance="outline" class="full">
-              <mat-label>Description (Markdown)</mat-label>
-              <textarea matInput formControlName="description" rows="8"></textarea>
-            </mat-form-field>
+            <div class="field-with-hint">
+              <mat-form-field appearance="outline" class="full">
+                <mat-label>Description (Markdown)</mat-label>
+                <textarea matInput formControlName="description" rows="8"></textarea>
+              </mat-form-field>
+              @if (selectedLang() !== 'en' && topic()?.description?.en) {
+                <span
+                  class="en-badge"
+                  [matTooltip]="topic()!.description.en"
+                  matTooltipPosition="above"
+                  >EN</span
+                >
+              }
+            </div>
 
             <div class="preview">
               <h3>Markdown preview</h3>
@@ -139,17 +150,21 @@ const LANGUAGE_LABELS: Record<LanguageCode, string> = {
               >
                 <img [src]="img.url" [alt]="img.titles.en || 'image'" />
                 <div class="img-fields">
-                  @if (selectedLang() !== 'en' && img.titles.en) {
-                    <div class="en-hint">EN: {{ img.titles.en }}</div>
-                  }
-                  <mat-form-field appearance="outline">
-                    <mat-label>Title ({{ selectedLang().toUpperCase() }})</mat-label>
-                    <input
-                      matInput
-                      [value]="img.titles[selectedLang()] || ''"
-                      (change)="onTitleChange(img, selectedLang(), $any($event.target).value)"
-                    />
-                  </mat-form-field>
+                  <div class="field-with-hint">
+                    <mat-form-field appearance="outline">
+                      <mat-label>Title ({{ selectedLang().toUpperCase() }})</mat-label>
+                      <input
+                        matInput
+                        [value]="img.titles[selectedLang()] || ''"
+                        (change)="onTitleChange(img, selectedLang(), $any($event.target).value)"
+                      />
+                    </mat-form-field>
+                    @if (selectedLang() !== 'en' && img.titles.en) {
+                      <span class="en-badge" [matTooltip]="img.titles.en" matTooltipPosition="above"
+                        >EN</span
+                      >
+                    }
+                  </div>
                   <div class="row-actions">
                     <button mat-stroked-button color="warn" (click)="deleteImage(img)">
                       <mat-icon>delete</mat-icon>
@@ -246,14 +261,29 @@ const LANGUAGE_LABELS: Record<LanguageCode, string> = {
       .lang-selector {
         margin-top: 8px;
       }
-      .en-hint {
-        background: #f5f5f5;
-        border-left: 3px solid #90caf9;
-        padding: 6px 12px;
-        font-size: 0.85em;
-        color: #616161;
-        border-radius: 4px;
-        margin-bottom: -8px;
+      .field-with-hint {
+        position: relative;
+      }
+      .field-with-hint mat-form-field {
+        width: 100%;
+      }
+      .en-badge {
+        position: absolute;
+        top: 8px;
+        right: -12px;
+        background: #1976d2;
+        color: white;
+        font-size: 10px;
+        font-weight: 600;
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: help;
+        z-index: 1;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
       }
       .images {
         display: grid;

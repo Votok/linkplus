@@ -11,6 +11,7 @@ import { MatListModule } from '@angular/material/list';
 import { MatSelectModule } from '@angular/material/select';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatMenuModule } from '@angular/material/menu';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 // Convenience array of commonly used Material modules for standalone components.
 export const MATERIAL_IMPORTS = [
@@ -27,4 +28,5 @@ export const MATERIAL_IMPORTS = [
   MatSelectModule,
   MatDividerModule,
   MatMenuModule,
+  MatTooltipModule,
 ];
