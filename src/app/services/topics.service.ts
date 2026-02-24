@@ -8,7 +8,7 @@ import {
   deleteDoc,
   getDoc,
 } from 'firebase/firestore';
-import { Observable } from 'rxjs';
+import { Observable, map } from 'rxjs';
 import { Topic, ImageMeta, LocalizedTitles } from '../shared/models';
 import { Storage } from '@angular/fire/storage';
 import { ref, uploadBytesResumable, getDownloadURL, deleteObject } from 'firebase/storage';
@@ -47,7 +47,9 @@ export class TopicsService {
 
   list$(): Observable<Topic[]> {
     const col = collection(this.db, TOPICS_COLLECTION);
-    return collectionData(col, { idField: 'id' }) as Observable<Topic[]>;
+    return (collectionData(col, { idField: 'id' }) as Observable<Topic[]>).pipe(
+      map((topics) => topics.slice().sort((a, b) => extractIndex(a.name) - extractIndex(b.name))),
+    );
   }
 
   get$(id: string): Observable<Topic | undefined> {
@@ -63,7 +65,7 @@ export class TopicsService {
       const now = serverTimestamp();
       await setDoc(ref, {
         id,
-        name: data.name,
+        name: data.name.trim(),
         description: data.description ?? '',
         images: [],
         active: true,
@@ -80,7 +82,8 @@ export class TopicsService {
     this.loading.begin();
     try {
       const refDoc = doc(this.db, TOPICS_COLLECTION, id);
-      await setDoc(refDoc, { ...patch, updatedAt: serverTimestamp() }, { merge: true });
+      const trimmed = patch.name != null ? { ...patch, name: patch.name.trim() } : patch;
+      await setDoc(refDoc, { ...trimmed, updatedAt: serverTimestamp() }, { merge: true });
     } finally {
       this.loading.end();
     }
@@ -98,7 +101,7 @@ export class TopicsService {
           topic.images.map((img) => {
             const sref = refFromPath(this.storage, img.path);
             return deleteObject(sref);
-          })
+          }),
         );
       }
       await deleteDoc(ref);
@@ -137,7 +140,7 @@ export class TopicsService {
           'state_changed',
           undefined,
           (e) => reject(e),
-          () => resolve()
+          () => resolve(),
         );
       });
       const url = await getDownloadURL(sref);
@@ -193,4 +196,9 @@ export class TopicsService {
 
 function refFromPath(storage: Storage, path: string) {
   return ref(storage, path);
+}
+
+function extractIndex(name: string): number {
+  const match = name.match(/^(\d+)/);
+  return match ? parseInt(match[1], 10) : 0;
 }

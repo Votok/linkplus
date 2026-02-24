@@ -9,5 +9,10 @@
   },
   "[scss]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "workbench.colorCustomizations": {
+    "activityBar.background": "#590D37",
+    "titleBar.activeBackground": "#7C124D",
+    "titleBar.activeForeground": "#FFFCFD"
   }
 }
