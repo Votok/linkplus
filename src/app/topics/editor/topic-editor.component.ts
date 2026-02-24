@@ -378,7 +378,7 @@ export class TopicEditorComponent implements OnInit {
         }
         if (t) {
           this.form.patchValue(
-            { name: t.name, description: t.description ?? '' },
+            { name: t.name.en, description: t.description.en ?? '' },
             { emitEvent: false }
           );
         }
@@ -387,12 +387,17 @@ export class TopicEditorComponent implements OnInit {
 
   async onSave() {
     const id = this.id();
-    if (!id || this.form.invalid) return;
+    const current = this.topic();
+    if (!id || !current || this.form.invalid) return;
     this.saving = true;
     try {
       // Ensure the global overlay is visible for this explicit save action
       this.loading.beginImmediate(180);
-      await this.topics.update(id, this.form.getRawValue());
+      const formValue = this.form.getRawValue();
+      // Merge form values (currently EN only) into the existing LocalizedTitles
+      const name = { ...current.name, en: formValue.name };
+      const description = { ...current.description, en: formValue.description };
+      await this.topics.update(id, { name, description });
       this.snack.open('Topic saved', 'OK', { duration: 1500 });
     } catch {
       this.snack.open('Failed to save topic', 'Dismiss', { duration: 3000 });

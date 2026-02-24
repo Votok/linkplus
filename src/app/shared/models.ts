@@ -22,8 +22,8 @@ export interface ImageMeta {
 
 export interface Topic {
   id: string;
-  name: string;
-  description: string; // Markdown or plain text
+  name: LocalizedTitles;
+  description: LocalizedTitles;
   images: ImageMeta[];
   active?: boolean;
   createdAt?: Timestamp;

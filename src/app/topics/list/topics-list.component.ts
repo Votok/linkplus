@@ -27,7 +27,7 @@ import { take } from 'rxjs';
       <mat-list class="list">
         @for (t of topics(); track t.id) {
         <mat-list-item>
-          <div matListItemTitle>{{ t.name }}</div>
+          <div matListItemTitle>{{ t.name.en }}</div>
           <!-- <div matListItemLine>{{ t.description || 'No description' }}</div> -->
           <div matListItemMeta class="actions">
             <button mat-flat-button color="primary" [routerLink]="['/topics', t.id, 'edit']">
@@ -122,7 +122,7 @@ export class TopicsListComponent implements OnInit {
   async addTopic() {
     this.loading.beginImmediate(180);
     try {
-      const id = await this.topicsService.create({ name: 'New Topic', description: '' });
+      const id = await this.topicsService.create({ name: { en: 'New Topic', cs: '', es: '' }, description: { en: '', cs: '', es: '' } });
       await this.router.navigate(['/topics', id, 'edit']);
     } finally {
       this.loading.end();
@@ -130,7 +130,7 @@ export class TopicsListComponent implements OnInit {
   }
 
   async deleteTopic(t: Topic) {
-    const yes = confirm(`Delete topic "${t.name}"? This cannot be undone.`);
+    const yes = confirm(`Delete topic "${t.name.en}"? This cannot be undone.`);
     if (!yes) return;
     this.loading.beginImmediate(180);
     try {

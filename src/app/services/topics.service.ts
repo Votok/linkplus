@@ -57,7 +57,7 @@ export class TopicsService {
     return docData(ref, { idField: 'id' }) as Observable<Topic | undefined>;
   }
 
-  async create(data: { name: string; description: string }): Promise<string> {
+  async create(data: { name: LocalizedTitles; description: LocalizedTitles }): Promise<string> {
     this.loading.begin();
     try {
       const id = newId();
@@ -65,8 +65,8 @@ export class TopicsService {
       const now = serverTimestamp();
       await setDoc(ref, {
         id,
-        name: data.name.trim(),
-        description: data.description ?? '',
+        name: trimLocalized(data.name),
+        description: trimLocalized(data.description),
         images: [],
         active: true,
         createdAt: now,
@@ -82,7 +82,7 @@ export class TopicsService {
     this.loading.begin();
     try {
       const refDoc = doc(this.db, TOPICS_COLLECTION, id);
-      const trimmed = patch.name != null ? { ...patch, name: patch.name.trim() } : patch;
+      const trimmed = patch.name != null ? { ...patch, name: trimLocalized(patch.name) } : patch;
       await setDoc(refDoc, { ...trimmed, updatedAt: serverTimestamp() }, { merge: true });
     } finally {
       this.loading.end();
@@ -198,7 +198,16 @@ function refFromPath(storage: Storage, path: string) {
   return ref(storage, path);
 }
 
-function extractIndex(name: string): number {
-  const match = name.match(/^(\d+)/);
+function trimLocalized(obj: LocalizedTitles): LocalizedTitles {
+  return Object.fromEntries(
+    Object.entries(obj).map(([k, v]) => [k, v.trim()]),
+  ) as LocalizedTitles;
+}
+
+function extractIndex(name: LocalizedTitles | string): number {
+  const raw = typeof name === 'string' ? name : name.en;
+  const match = raw.match(/^(\d+)/);
   return match ? parseInt(match[1], 10) : 0;
 }
+
+

@@ -18,7 +18,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
           <mat-label>Topic</mat-label>
           <mat-select [value]="selectedTopicId()" (valueChange)="onTopicSelectionChange($event)">
             @for (t of topics$ | async; track t.id) {
-            <mat-option [value]="t.id">{{ t.name }}</mat-option>
+            <mat-option [value]="t.id">{{ t.name.en }}</mat-option>
             }
           </mat-select>
         </mat-form-field>
@@ -40,7 +40,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
       @if (currentTopic(); as topic) {
       <div class="print-page">
-        <h1 class="title">{{ topic.name }}</h1>
+        <h1 class="title">{{ topic.name[lang] }}</h1>
         <div class="images">
           @for (img of topic.images; track img.id) {
           <div class="img">
