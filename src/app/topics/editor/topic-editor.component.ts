@@ -1,4 +1,13 @@
-import { Component, DestroyRef, OnInit, computed, effect, inject, signal } from '@angular/core';
+import {
+  Component,
+  DestroyRef,
+  HostListener,
+  OnInit,
+  computed,
+  effect,
+  inject,
+  signal,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -18,6 +27,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MarkdownModule, MarkdownComponent } from 'ngx-markdown';
 import { CdkDragDrop, CdkDragStart, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
 import { LoadingService } from '../../services/loading.service';
+import { HasUnsavedChanges } from '../../auth/unsaved-changes.guard';
 
 const LANGUAGE_LABELS: Record<LanguageCode, string> = {
   en: 'English',
@@ -387,7 +397,18 @@ const LANGUAGE_LABELS: Record<LanguageCode, string> = {
     `,
   ],
 })
-export class TopicEditorComponent implements OnInit {
+export class TopicEditorComponent implements OnInit, HasUnsavedChanges {
+  @HostListener('window:beforeunload', ['$event'])
+  onBeforeUnload(event: BeforeUnloadEvent): void {
+    if (this.hasUnsavedChanges()) {
+      event.preventDefault();
+    }
+  }
+
+  hasUnsavedChanges(): boolean {
+    return this.form.dirty;
+  }
+
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly topics = inject(TopicsService);
@@ -465,6 +486,7 @@ export class TopicEditorComponent implements OnInit {
       const name = { ...current.name, [lang]: formValue.name };
       const description = { ...current.description, [lang]: formValue.description };
       await this.topics.update(id, { order: formValue.order, name, description });
+      this.form.markAsPristine();
       this.snack.open('Topic saved', 'OK', { duration: 1500 });
     } catch {
       this.snack.open('Failed to save topic', 'Dismiss', { duration: 3000 });

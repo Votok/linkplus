@@ -36,7 +36,9 @@ import { take, switchMap } from 'rxjs';
       <mat-list class="list">
         @for (t of topics(); track t.id) {
           <mat-list-item>
-            <div matListItemTitle>{{ t.name.en }}</div>
+            <div matListItemTitle>
+              <span class="order">{{ t.order ?? 0 }}</span> {{ t.name.en }}
+            </div>
             <!-- <div matListItemLine>{{ t.description || 'No description' }}</div> -->
             <div matListItemMeta class="actions">
               <button mat-flat-button color="primary" [routerLink]="['/topics', t.id, 'edit']">
@@ -93,6 +95,14 @@ import { take, switchMap } from 'rxjs';
       .list {
         overflow: auto;
         -webkit-overflow-scrolling: touch;
+      }
+      .order {
+        display: inline-block;
+        min-width: 24px;
+        text-align: center;
+        font-weight: 600;
+        opacity: 0.5;
+        margin-right: 4px;
       }
       .actions {
         display: inline-flex;

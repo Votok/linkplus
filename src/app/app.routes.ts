@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './auth/auth.guard';
 import { loginRedirectGuard } from './auth/login-redirect.guard';
+import { unsavedChangesGuard } from './auth/unsaved-changes.guard';
 
 export const routes: Routes = [
   {
@@ -22,6 +23,7 @@ export const routes: Routes = [
         path: 'topics/:id/edit',
         loadComponent: () =>
           import('./topics/editor/topic-editor.component').then((m) => m.TopicEditorComponent),
+        canDeactivate: [unsavedChangesGuard],
       },
       {
         path: 'print',
