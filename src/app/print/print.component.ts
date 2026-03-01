@@ -162,29 +162,39 @@ import { MarkdownModule } from 'ngx-markdown';
           font-size: 12pt;
         }
 
+        /* Images page: keep everything on one page */
+        .images-page {
+          display: flex;
+          flex-direction: column;
+          height: calc(100vh - 20mm);
+          overflow: hidden;
+          break-inside: avoid;
+          page-break-inside: avoid;
+        }
+
         /* Images page title visible in print */
         .images-title {
           font-size: 14pt;
           margin-bottom: 4mm;
+          flex-shrink: 0;
         }
 
         /* 2×4 grid per A4 page with table-like lines */
         .images-page .images {
+          flex: 1 1 0;
+          min-height: 0;
           grid-template-columns: 1fr 1fr;
           gap: 0; /* use borders as dividers instead of gaps */
-          /* No outer border; keep only internal separators */
           box-sizing: border-box;
-          /* Four uniform rows that fill the printable height minus page paddings and title */
-          grid-auto-rows: calc((100vh - 20mm - 12mm) / 4);
+          grid-template-rows: repeat(4, 1fr);
         }
 
         .images-page .images > .img {
           display: flex;
           flex-direction: column;
           box-sizing: border-box;
-          /* Avoid breaking a cell across pages */
-          break-inside: avoid;
-          page-break-inside: avoid;
+          overflow: hidden;
+          min-height: 0;
         }
 
         /* Single vertical divider between the two columns */
@@ -198,14 +208,14 @@ import { MarkdownModule } from 'ngx-markdown';
 
         /* Image scales within fixed cell, caption keeps its size */
         .images-page .images > .img img {
-          flex: 1 1 auto;
+          flex: 1 1 0;
           width: 100%;
-          height: 100%;
-          object-fit: contain;
           min-height: 0;
+          object-fit: contain;
           display: block;
         }
         .images-page .caption {
+          flex-shrink: 0;
           font-size: 12pt; /* keep captions unchanged */
           line-height: 1.2;
           margin-top: 2mm;
@@ -246,23 +256,26 @@ export class PrintComponent {
     const qpId = this.route.snapshot.queryParamMap.get('topic');
     if (qpId) this.selectedTopicId.set(qpId);
 
-    this.topics.list$().pipe(takeUntilDestroyed(this.destroyRef)).subscribe((list) => {
-      this.topicsList.set(list);
+    this.topics
+      .list$()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((list) => {
+        this.topicsList.set(list);
 
-      // If we have a query-param topic, derive its grade
-      const qpTopic = qpId ? list.find((t) => t.id === qpId) : null;
-      if (qpTopic) {
-        this.selectedGradeId.set(qpTopic.gradeId);
-      }
-
-      // Auto-select first topic in grade if none selected
-      if (!this.selectedTopicId() || !list.find((t) => t.id === this.selectedTopicId())) {
-        const filtered = list.filter((t) => t.gradeId === this.selectedGradeId());
-        if (filtered.length) {
-          this.selectedTopicId.set(filtered[0].id);
+        // If we have a query-param topic, derive its grade
+        const qpTopic = qpId ? list.find((t) => t.id === qpId) : null;
+        if (qpTopic) {
+          this.selectedGradeId.set(qpTopic.gradeId);
         }
-      }
-    });
+
+        // Auto-select first topic in grade if none selected
+        if (!this.selectedTopicId() || !list.find((t) => t.id === this.selectedTopicId())) {
+          const filtered = list.filter((t) => t.gradeId === this.selectedGradeId());
+          if (filtered.length) {
+            this.selectedTopicId.set(filtered[0].id);
+          }
+        }
+      });
   }
 
   onGradeChange(gradeId: string) {
