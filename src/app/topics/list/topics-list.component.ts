@@ -125,21 +125,22 @@ export class TopicsListComponent implements OnInit {
   ngOnInit(): void {
     // Show overlay until the first list emission arrives (immediate to avoid race/flicker)
     this.loading.beginImmediate(180);
-    this.topics$
-      .pipe(take(1))
-      .subscribe({
-        next: () => this.loading.end(),
-        error: () => this.loading.end(),
-      });
+    this.topics$.pipe(take(1)).subscribe({
+      next: () => this.loading.end(),
+      error: () => this.loading.end(),
+    });
   }
 
   async addTopic() {
     this.loading.beginImmediate(180);
     try {
+      const current = this.topics() ?? [];
+      const maxOrder = current.reduce((max, t) => Math.max(max, t.order ?? 0), 0);
       const id = await this.topicsService.create({
         name: { en: 'New Topic', cs: '', es: '' },
         description: { en: '', cs: '', es: '' },
         gradeId: this.selectedGradeId(),
+        order: maxOrder + 1,
       });
       await this.router.navigate(['/topics', id, 'edit']);
     } finally {
@@ -157,5 +158,4 @@ export class TopicsListComponent implements OnInit {
       this.loading.end();
     }
   }
-
 }

@@ -23,6 +23,7 @@ export interface ImageMeta {
 export interface Topic {
   id: string;
   gradeId: string;
+  order: number;
   name: LocalizedTitles;
   description: LocalizedTitles;
   images: ImageMeta[];

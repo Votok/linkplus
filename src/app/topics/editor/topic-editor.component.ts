@@ -66,17 +66,23 @@ const LANGUAGE_LABELS: Record<LanguageCode, string> = {
           </div>
 
           <form [formGroup]="form" class="form" (ngSubmit)="onSave()">
-            <div class="field-with-hint">
-              <mat-form-field appearance="outline">
-                <mat-label>Topic name</mat-label>
-                <input matInput formControlName="name" />
-                <mat-error *ngIf="form.controls.name.invalid">Name is required</mat-error>
+            <div class="name-row">
+              <mat-form-field appearance="outline" class="order-field">
+                <mat-label>Order</mat-label>
+                <input matInput type="number" formControlName="order" />
               </mat-form-field>
-              @if (selectedLang() !== 'en' && topic()?.name?.en) {
-                <span class="en-badge" [matTooltip]="topic()!.name.en" matTooltipPosition="above"
-                  >EN</span
-                >
-              }
+              <div class="field-with-hint" style="flex:1">
+                <mat-form-field appearance="outline">
+                  <mat-label>Topic name</mat-label>
+                  <input matInput formControlName="name" />
+                  <mat-error *ngIf="form.controls.name.invalid">Name is required</mat-error>
+                </mat-form-field>
+                @if (selectedLang() !== 'en' && topic()?.name?.en) {
+                  <span class="en-badge" [matTooltip]="topic()!.name.en" matTooltipPosition="above"
+                    >EN</span
+                  >
+                }
+              </div>
             </div>
 
             <div class="field-with-hint">
@@ -247,6 +253,15 @@ const LANGUAGE_LABELS: Record<LanguageCode, string> = {
         grid-template-columns: 1fr;
         gap: 16px;
       }
+      .name-row {
+        display: flex;
+        gap: 12px;
+        align-items: flex-start;
+      }
+      .order-field {
+        width: 90px;
+        flex-shrink: 0;
+      }
       .form .full {
         grid-column: 1 / -1;
       }
@@ -398,6 +413,7 @@ export class TopicEditorComponent implements OnInit {
   readonly selectedLang = signal<LanguageCode>('en');
 
   readonly form = this.fb.nonNullable.group({
+    order: [0, [Validators.required, Validators.min(0)]],
     name: ['', Validators.required],
     description: [''],
   });
@@ -407,7 +423,7 @@ export class TopicEditorComponent implements OnInit {
     const lang = this.selectedLang();
     if (t) {
       this.form.patchValue(
-        { name: t.name[lang] ?? '', description: t.description[lang] ?? '' },
+        { order: t.order ?? 0, name: t.name[lang] ?? '', description: t.description[lang] ?? '' },
         { emitEvent: false },
       );
     }
@@ -448,7 +464,7 @@ export class TopicEditorComponent implements OnInit {
       const lang = this.selectedLang();
       const name = { ...current.name, [lang]: formValue.name };
       const description = { ...current.description, [lang]: formValue.description };
-      await this.topics.update(id, { name, description });
+      await this.topics.update(id, { order: formValue.order, name, description });
       this.snack.open('Topic saved', 'OK', { duration: 1500 });
     } catch {
       this.snack.open('Failed to save topic', 'Dismiss', { duration: 3000 });

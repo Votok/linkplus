@@ -9,7 +9,7 @@ import {
   getDoc,
 } from 'firebase/firestore';
 import { Observable, map } from 'rxjs';
-import { Topic, ImageMeta, LocalizedTitles, GRADES } from '../shared/models';
+import { Topic, ImageMeta, LocalizedTitles } from '../shared/models';
 import { Storage } from '@angular/fire/storage';
 import { ref, uploadBytesResumable, getDownloadURL, deleteObject } from 'firebase/storage';
 import { LoadingService } from './loading.service';
@@ -48,14 +48,12 @@ export class TopicsService {
   list$(): Observable<Topic[]> {
     const col = collection(this.db, TOPICS_COLLECTION);
     return (collectionData(col, { idField: 'id' }) as Observable<Topic[]>).pipe(
-      map((topics) => topics.slice().sort((a, b) => extractIndex(a.name) - extractIndex(b.name))),
+      map((topics) => topics.slice().sort((a, b) => (a.order ?? 0) - (b.order ?? 0))),
     );
   }
 
   listByGrade$(gradeId: string): Observable<Topic[]> {
-    return this.list$().pipe(
-      map((topics) => topics.filter((t) => t.gradeId === gradeId)),
-    );
+    return this.list$().pipe(map((topics) => topics.filter((t) => t.gradeId === gradeId)));
   }
 
   get$(id: string): Observable<Topic | undefined> {
@@ -63,7 +61,12 @@ export class TopicsService {
     return docData(ref, { idField: 'id' }) as Observable<Topic | undefined>;
   }
 
-  async create(data: { name: LocalizedTitles; description: LocalizedTitles; gradeId: string }): Promise<string> {
+  async create(data: {
+    name: LocalizedTitles;
+    description: LocalizedTitles;
+    gradeId: string;
+    order: number;
+  }): Promise<string> {
     this.loading.begin();
     try {
       const id = newId();
@@ -72,6 +75,7 @@ export class TopicsService {
       await setDoc(ref, {
         id,
         gradeId: data.gradeId,
+        order: data.order,
         name: trimLocalized(data.name),
         description: trimLocalized(data.description),
         images: [],
@@ -207,10 +211,4 @@ function refFromPath(storage: Storage, path: string) {
 
 function trimLocalized(obj: LocalizedTitles): LocalizedTitles {
   return Object.fromEntries(Object.entries(obj).map(([k, v]) => [k, v.trim()])) as LocalizedTitles;
-}
-
-function extractIndex(name: LocalizedTitles | string): number {
-  const raw = typeof name === 'string' ? name : name.en;
-  const match = raw.match(/^(\d+)/);
-  return match ? parseInt(match[1], 10) : 0;
 }
