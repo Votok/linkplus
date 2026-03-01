@@ -96,6 +96,12 @@ import { take, switchMap } from 'rxjs';
         overflow: auto;
         -webkit-overflow-scrolling: touch;
       }
+      mat-list-item {
+        border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+      }
+      mat-list-item:nth-child(odd) {
+        background: rgba(0, 0, 0, 0.02);
+      }
       .order {
         display: inline-block;
         min-width: 24px;
