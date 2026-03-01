@@ -2,7 +2,6 @@ import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MATERIAL_IMPORTS } from '../shared/material.imports';
 import { TopicsService } from '../services/topics.service';
-import { AsyncPipe } from '@angular/common';
 import { Topic, ImageMeta, LanguageCode, GRADES } from '../shared/models';
 import { ActivatedRoute } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -11,7 +10,7 @@ import { MarkdownModule } from 'ngx-markdown';
 @Component({
   standalone: true,
   selector: 'app-print',
-  imports: [CommonModule, AsyncPipe, MarkdownModule, ...MATERIAL_IMPORTS],
+  imports: [CommonModule, MarkdownModule, ...MATERIAL_IMPORTS],
   template: `
     <div class="container">
       <div class="controls no-print">
