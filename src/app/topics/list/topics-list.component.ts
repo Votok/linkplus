@@ -37,7 +37,7 @@ import { take, switchMap } from 'rxjs';
         @for (t of topics(); track t.id) {
           <mat-list-item>
             <div matListItemTitle>
-              <span class="order">{{ t.order ?? 0 }}</span> {{ t.name.en }}
+              <span class="order">{{ t.order }}</span> {{ t.name.en }}
             </div>
             <!-- <div matListItemLine>{{ t.description || 'No description' }}</div> -->
             <div matListItemMeta class="actions">

@@ -40,9 +40,11 @@ export interface Grade {
 }
 
 export const GRADES: Grade[] = [
-  { id: 'junior-kinder', name: 'Junior Kinder' },
-  { id: 'senior-kinder', name: 'Senior Kinder' },
-  { id: 'grade-1', name: 'Grade 1' },
-  { id: 'grade-2', name: 'Grade 2' },
-  { id: 'grade-3', name: 'Grade 3' },
+  { id: 'jk-sk', name: 'JK/SK' },
+  { id: 'grade-1-science', name: 'Grade 1 Science' },
+  { id: 'grade-1-social-studies', name: 'Grade 1 Social Studies' },
+  { id: 'grade-2-science', name: 'Grade 2 Science' },
+  { id: 'grade-2-social-science', name: 'Grade 2 Social Science' },
+  { id: 'grade-3-science', name: 'Grade 3 Science' },
+  { id: 'grade-3-social-science', name: 'Grade 3 Social Science' },
 ];
