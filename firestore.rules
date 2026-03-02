@@ -16,6 +16,11 @@ service cloud.firestore {
       allow read, write: if isAdmin();
     }
 
+    // Grades collection: per-grade settings (admin-only)
+    match /grades/{gradeId} {
+      allow read, write: if isAdmin();
+    }
+
     // Fallback: deny everything else unless admin
     match /{document=**} {
       allow read, write: if isAdmin();

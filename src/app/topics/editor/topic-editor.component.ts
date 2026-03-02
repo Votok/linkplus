@@ -55,7 +55,12 @@ const LANGUAGE_LABELS: Record<LanguageCode, string> = {
             <span class="topic-id">#{{ t.id }}</span>
             <mat-chip>{{ gradeName() }}</mat-chip>
             <span class="spacer"></span>
-            <a mat-stroked-button color="primary" [routerLink]="['/topics']">
+            <a
+              mat-stroked-button
+              color="primary"
+              [routerLink]="['/topics']"
+              [queryParams]="{ grade: topic()?.gradeId }"
+            >
               <mat-icon>arrow_back</mat-icon>
               Back to list
             </a>

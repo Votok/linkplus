@@ -2,10 +2,14 @@ import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MATERIAL_IMPORTS } from '../shared/material.imports';
 import { TopicsService } from '../services/topics.service';
+import { GradeSettingsService } from '../services/grade-settings.service';
 import { Topic, ImageMeta, LanguageCode, GRADES } from '../shared/models';
 import { ActivatedRoute } from '@angular/router';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { MarkdownModule } from 'ngx-markdown';
+import { switchMap } from 'rxjs';
+
+type PrintMode = 'topic' | 'hardCover' | 'homeLanguage';
 
 @Component({
   standalone: true,
@@ -41,13 +45,53 @@ import { MarkdownModule } from 'ngx-markdown';
           </mat-select>
         </mat-form-field>
 
-        <button mat-flat-button color="primary" (click)="print()">
+        <button
+          mat-flat-button
+          color="primary"
+          (click)="printMode('topic')"
+          [disabled]="!currentTopic()"
+        >
           <mat-icon>print</mat-icon>
-          Print
+          Print Topic
+        </button>
+        <button
+          mat-stroked-button
+          (click)="printMode('hardCover')"
+          [disabled]="!gradeSettings()?.hardCoverPrintOut"
+        >
+          <mat-icon>print</mat-icon>
+          Print Hard Cover
+        </button>
+        <button
+          mat-stroked-button
+          (click)="printMode('homeLanguage')"
+          [disabled]="!gradeSettings()?.homeLanguagePrintOut"
+        >
+          <mat-icon>print</mat-icon>
+          Print Home Language
         </button>
       </div>
 
-      @if (currentTopic(); as topic) {
+      @if (activePrintMode() !== 'topic' || !currentTopic()) {
+        @if (gradeSettings(); as gs) {
+          @if (activePrintMode() !== 'homeLanguage' && gs.hardCoverPrintOut) {
+            <div class="print-page grade-page">
+              <div class="grade-content">
+                <markdown [data]="gs.hardCoverPrintOut"></markdown>
+              </div>
+            </div>
+          }
+          @if (activePrintMode() !== 'hardCover' && gs.homeLanguagePrintOut) {
+            <div class="print-page grade-page">
+              <div class="grade-content">
+                <markdown [data]="gs.homeLanguagePrintOut"></markdown>
+              </div>
+            </div>
+          }
+        }
+      }
+
+      @if (activePrintMode() === 'topic' && currentTopic(); as topic) {
         <div class="print-page cover-page">
           <h1 class="cover-title">{{ topic.name[lang] }}</h1>
           <div class="cover-description">
@@ -129,6 +173,18 @@ import { MarkdownModule } from 'ngx-markdown';
         font-size: 12pt;
         text-align: center;
       }
+      /* Grade settings pages */
+      .grade-page {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+      }
+      .grade-content {
+        max-width: 100%;
+        font-size: 12pt;
+        line-height: 1.6;
+      }
 
       @media print {
         /* Remove outer container padding so content fits exactly one page */
@@ -159,6 +215,12 @@ import { MarkdownModule } from 'ngx-markdown';
         }
         .cover-description {
           font-size: 12pt;
+        }
+
+        /* Grade pages: fill one A4 page, then break */
+        .grade-page {
+          page-break-after: always;
+          min-height: calc(100vh - 20mm);
         }
 
         /* Images page: keep everything on one page */
@@ -231,6 +293,7 @@ import { MarkdownModule } from 'ngx-markdown';
 })
 export class PrintComponent {
   private readonly topics = inject(TopicsService);
+  private readonly gradeSettingsService = inject(GradeSettingsService);
   private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
 
@@ -239,7 +302,12 @@ export class PrintComponent {
 
   selectedGradeId = signal(GRADES[0].id);
   selectedTopicId = signal<string | null>(null);
+  activePrintMode = signal<PrintMode>('topic');
   lang: LanguageCode = 'en';
+
+  readonly gradeSettings = toSignal(
+    toObservable(this.selectedGradeId).pipe(switchMap((id) => this.gradeSettingsService.get$(id))),
+  );
 
   readonly filteredTopics = computed(() => {
     const gradeId = this.selectedGradeId();
@@ -296,7 +364,11 @@ export class PrintComponent {
     return topic?.description?.[this.lang] ?? '';
   }
 
-  print() {
-    window.print();
+  printMode(mode: PrintMode) {
+    this.activePrintMode.set(mode);
+    // Wait for Angular to re-render the visible pages before printing
+    setTimeout(() => {
+      window.print();
+    });
   }
 }

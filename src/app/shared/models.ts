@@ -48,3 +48,10 @@ export const GRADES: Grade[] = [
   { id: 'grade-3-science', name: 'Grade 3 Science' },
   { id: 'grade-3-social-science', name: 'Grade 3 Social Science' },
 ];
+
+export interface GradeSettings {
+  id: string;
+  hardCoverPrintOut: string;
+  homeLanguagePrintOut: string;
+  updatedAt?: Timestamp;
+}

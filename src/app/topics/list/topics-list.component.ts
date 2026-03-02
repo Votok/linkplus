@@ -1,6 +1,6 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MATERIAL_IMPORTS } from '../../shared/material.imports';
 import { TopicsService } from '../../services/topics.service';
 import { Topic, GRADES } from '../../shared/models';
@@ -22,14 +22,20 @@ import { take, switchMap } from 'rxjs';
         </button>
       </div>
 
-      <mat-form-field appearance="outline">
-        <mat-label>Grade</mat-label>
-        <mat-select [value]="selectedGradeId()" (valueChange)="selectedGradeId.set($event)">
-          @for (g of grades; track g.id) {
-            <mat-option [value]="g.id">{{ g.name }}</mat-option>
-          }
-        </mat-select>
-      </mat-form-field>
+      <div class="grade-row">
+        <mat-form-field appearance="outline">
+          <mat-label>Grade</mat-label>
+          <mat-select [value]="selectedGradeId()" (valueChange)="selectedGradeId.set($event)">
+            @for (g of grades; track g.id) {
+              <mat-option [value]="g.id">{{ g.name }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+        <button mat-stroked-button [routerLink]="['/grades', selectedGradeId(), 'setup']">
+          <mat-icon>settings</mat-icon>
+          Set Up
+        </button>
+      </div>
 
       <mat-divider />
 
@@ -119,6 +125,11 @@ import { take, switchMap } from 'rxjs';
       .menu-warn {
         color: var(--mdc-theme-error, #d32f2f);
       }
+      .grade-row {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+      }
       .hint {
         opacity: 0.7;
       }
@@ -128,6 +139,7 @@ import { take, switchMap } from 'rxjs';
 export class TopicsListComponent implements OnInit {
   private readonly topicsService = inject(TopicsService);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
   private readonly loading = inject(LoadingService);
 
   readonly grades = GRADES;
@@ -139,6 +151,12 @@ export class TopicsListComponent implements OnInit {
   readonly topics = toSignal(this.topics$);
 
   ngOnInit(): void {
+    // Restore previously selected grade from query param
+    const qpGrade = this.route.snapshot.queryParamMap.get('grade');
+    if (qpGrade && GRADES.some((g) => g.id === qpGrade)) {
+      this.selectedGradeId.set(qpGrade);
+    }
+
     // Show overlay until the first list emission arrives (immediate to avoid race/flicker)
     this.loading.beginImmediate(180);
     this.topics$.pipe(take(1)).subscribe({

@@ -26,6 +26,12 @@ export const routes: Routes = [
         canDeactivate: [unsavedChangesGuard],
       },
       {
+        path: 'grades/:gradeId/setup',
+        loadComponent: () =>
+          import('./grades/setup/grade-setup.component').then((m) => m.GradeSetupComponent),
+        canDeactivate: [unsavedChangesGuard],
+      },
+      {
         path: 'print',
         loadComponent: () => import('./print/print.component').then((m) => m.PrintComponent),
       },
