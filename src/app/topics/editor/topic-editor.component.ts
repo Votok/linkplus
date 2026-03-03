@@ -19,7 +19,9 @@ import {
   Topic,
   LanguageCode,
   SUPPORTED_LANGUAGES,
+  LANGUAGE_LABELS,
   GRADES,
+  emptyLocalizedTitles,
 } from '../../shared/models';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { filter, map, switchMap, tap, distinctUntilChanged } from 'rxjs';
@@ -29,11 +31,6 @@ import { CdkDragDrop, CdkDragStart, DragDropModule, moveItemInArray } from '@ang
 import { LoadingService } from '../../services/loading.service';
 import { HasUnsavedChanges } from '../../auth/unsaved-changes.guard';
 
-const LANGUAGE_LABELS: Record<LanguageCode, string> = {
-  en: 'English',
-  cs: 'Čeština',
-  es: 'Español',
-};
 @Component({
   standalone: true,
   selector: 'app-topic-editor',
@@ -509,7 +506,7 @@ export class TopicEditorComponent implements OnInit, HasUnsavedChanges {
     if (!file) return;
     this.uploading = true;
     try {
-      const titles: LocalizedTitles = { en: '', cs: '', es: '' };
+      const titles: LocalizedTitles = emptyLocalizedTitles();
       await this.topics.uploadImage(id, file, titles);
       this.snack.open('Image uploaded', 'OK', { duration: 1500 });
     } catch (e: unknown) {

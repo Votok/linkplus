@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MATERIAL_IMPORTS } from '../../shared/material.imports';
 import { TopicsService } from '../../services/topics.service';
-import { Topic, GRADES } from '../../shared/models';
+import { Topic, GRADES, emptyLocalizedTitles } from '../../shared/models';
 import { toSignal, toObservable } from '@angular/core/rxjs-interop';
 import { LoadingService } from '../../services/loading.service';
 import { take, switchMap } from 'rxjs';
@@ -171,8 +171,8 @@ export class TopicsListComponent implements OnInit {
       const current = this.topics() ?? [];
       const maxOrder = current.reduce((max, t) => Math.max(max, t.order ?? 0), 0);
       const id = await this.topicsService.create({
-        name: { en: 'New Topic', cs: '', es: '' },
-        description: { en: '', cs: '', es: '' },
+        name: { ...emptyLocalizedTitles(), en: 'New Topic' },
+        description: emptyLocalizedTitles(),
         gradeId: this.selectedGradeId(),
         order: maxOrder + 1,
       });

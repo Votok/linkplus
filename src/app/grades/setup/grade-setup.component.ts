@@ -4,6 +4,7 @@ import {
   HostListener,
   OnInit,
   computed,
+  effect,
   inject,
   signal,
 } from '@angular/core';
@@ -12,7 +13,15 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { MATERIAL_IMPORTS } from '../../shared/material.imports';
 import { GradeSettingsService } from '../../services/grade-settings.service';
-import { GRADES } from '../../shared/models';
+import {
+  GRADES,
+  GradeSettings,
+  LanguageCode,
+  LocalizedTitles,
+  SUPPORTED_LANGUAGES,
+  LANGUAGE_LABELS,
+  emptyLocalizedTitles,
+} from '../../shared/models';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { filter, map, switchMap, distinctUntilChanged } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -50,14 +59,35 @@ import { HasUnsavedChanges } from '../../auth/unsaved-changes.guard';
         </div>
         <mat-divider />
 
+        <div class="lang-selector">
+          <mat-form-field appearance="outline">
+            <mat-label>Working language</mat-label>
+            <mat-select [value]="selectedLang()" (valueChange)="selectedLang.set($event)">
+              @for (l of langs; track l) {
+                <mat-option [value]="l">{{ languageLabel(l) }} ({{ l.toUpperCase() }})</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+        </div>
+
         <form [formGroup]="form" class="form" (ngSubmit)="onSave()">
           <section>
             <h3>Hard Cover Print-Out</h3>
             <p class="hint">This will be the cover page for the folder.</p>
-            <mat-form-field appearance="outline" class="full">
-              <mat-label>Hard Cover Print-Out (Markdown)</mat-label>
-              <textarea matInput formControlName="hardCoverPrintOut" rows="10"></textarea>
-            </mat-form-field>
+            <div class="field-with-hint">
+              <mat-form-field appearance="outline" class="full">
+                <mat-label>Hard Cover Print-Out (Markdown)</mat-label>
+                <textarea matInput formControlName="hardCoverPrintOut" rows="10"></textarea>
+              </mat-form-field>
+              @if (selectedLang() !== 'en' && currentSettings()?.hardCoverPrintOut?.en) {
+                <span
+                  class="en-badge"
+                  [matTooltip]="currentSettings()!.hardCoverPrintOut.en"
+                  matTooltipPosition="above"
+                  >EN</span
+                >
+              }
+            </div>
             <div class="preview">
               <h4>Preview</h4>
               <markdown [data]="form.controls.hardCoverPrintOut.value || ''"></markdown>
@@ -69,10 +99,20 @@ import { HasUnsavedChanges } from '../../auth/unsaved-changes.guard';
           <section>
             <h3>Home Language Print-Out</h3>
             <p class="hint">This will be the first page inside the folder.</p>
-            <mat-form-field appearance="outline" class="full">
-              <mat-label>Home Language Print-Out (Markdown)</mat-label>
-              <textarea matInput formControlName="homeLanguagePrintOut" rows="10"></textarea>
-            </mat-form-field>
+            <div class="field-with-hint">
+              <mat-form-field appearance="outline" class="full">
+                <mat-label>Home Language Print-Out (Markdown)</mat-label>
+                <textarea matInput formControlName="homeLanguagePrintOut" rows="10"></textarea>
+              </mat-form-field>
+              @if (selectedLang() !== 'en' && currentSettings()?.homeLanguagePrintOut?.en) {
+                <span
+                  class="en-badge"
+                  [matTooltip]="currentSettings()!.homeLanguagePrintOut.en"
+                  matTooltipPosition="above"
+                  >EN</span
+                >
+              }
+            </div>
             <div class="preview">
               <h4>Preview</h4>
               <markdown [data]="form.controls.homeLanguagePrintOut.value || ''"></markdown>
@@ -148,6 +188,33 @@ import { HasUnsavedChanges } from '../../auth/unsaved-changes.guard';
         display: flex;
         gap: 12px;
       }
+      .lang-selector {
+        margin-top: 8px;
+      }
+      .field-with-hint {
+        position: relative;
+      }
+      .field-with-hint mat-form-field {
+        width: 100%;
+      }
+      .en-badge {
+        position: absolute;
+        top: 8px;
+        right: -12px;
+        background: #1976d2;
+        color: white;
+        font-size: 10px;
+        font-weight: 600;
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: help;
+        z-index: 1;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+      }
     `,
   ],
 })
@@ -176,12 +243,45 @@ export class GradeSetupComponent implements OnInit, HasUnsavedChanges {
     return GRADES.find((g) => g.id === id)?.name ?? id ?? '';
   });
 
+  readonly langs: LanguageCode[] = SUPPORTED_LANGUAGES;
+  readonly selectedLang = signal<LanguageCode>('en');
+  readonly currentSettings = signal<GradeSettings | null>(null);
+
   saving = false;
 
   readonly form = this.fb.nonNullable.group({
     hardCoverPrintOut: [''],
     homeLanguagePrintOut: [''],
   });
+
+  private readonly patchOnLangChange = effect(() => {
+    const settings = this.currentSettings();
+    const lang = this.selectedLang();
+    if (settings) {
+      this.form.patchValue(
+        {
+          hardCoverPrintOut: settings.hardCoverPrintOut?.[lang] ?? '',
+          homeLanguagePrintOut: settings.homeLanguagePrintOut?.[lang] ?? '',
+        },
+        { emitEvent: false },
+      );
+    }
+  });
+
+  languageLabel(code: LanguageCode): string {
+    return LANGUAGE_LABELS[code] ?? code.toUpperCase();
+  }
+
+  /** Handle legacy plain-string values from Firestore (pre-migration). */
+  private normalizeField(value: unknown): LocalizedTitles {
+    if (typeof value === 'string') {
+      return { ...emptyLocalizedTitles(), en: value };
+    }
+    if (value && typeof value === 'object') {
+      return value as LocalizedTitles;
+    }
+    return emptyLocalizedTitles();
+  }
 
   ngOnInit(): void {
     this.loading.beginImmediate(180);
@@ -200,10 +300,17 @@ export class GradeSetupComponent implements OnInit, HasUnsavedChanges {
       )
       .subscribe((settings) => {
         if (settings) {
+          const normalized: GradeSettings = {
+            ...settings,
+            hardCoverPrintOut: this.normalizeField(settings.hardCoverPrintOut),
+            homeLanguagePrintOut: this.normalizeField(settings.homeLanguagePrintOut),
+          };
+          this.currentSettings.set(normalized);
+          const lang = this.selectedLang();
           this.form.patchValue(
             {
-              hardCoverPrintOut: settings.hardCoverPrintOut ?? '',
-              homeLanguagePrintOut: settings.homeLanguagePrintOut ?? '',
+              hardCoverPrintOut: normalized.hardCoverPrintOut[lang] ?? '',
+              homeLanguagePrintOut: normalized.homeLanguagePrintOut[lang] ?? '',
             },
             { emitEvent: false },
           );
@@ -222,8 +329,18 @@ export class GradeSetupComponent implements OnInit, HasUnsavedChanges {
     this.saving = true;
     try {
       this.loading.beginImmediate(180);
-      const value = this.form.getRawValue();
-      await this.gradeSettings.save(gradeId, value);
+      const formValue = this.form.getRawValue();
+      const lang = this.selectedLang();
+      const current = this.currentSettings();
+      const hardCoverPrintOut = {
+        ...(current?.hardCoverPrintOut ?? emptyLocalizedTitles()),
+        [lang]: formValue.hardCoverPrintOut,
+      };
+      const homeLanguagePrintOut = {
+        ...(current?.homeLanguagePrintOut ?? emptyLocalizedTitles()),
+        [lang]: formValue.homeLanguagePrintOut,
+      };
+      await this.gradeSettings.save(gradeId, { hardCoverPrintOut, homeLanguagePrintOut });
       this.form.markAsPristine();
       this.snack.open('Grade settings saved', 'OK', { duration: 1500 });
     } catch {

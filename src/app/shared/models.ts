@@ -1,11 +1,86 @@
 import type { Timestamp } from 'firebase/firestore';
 
-export type LanguageCode = 'en' | 'cs' | 'es';
+export type LanguageCode =
+  | 'en'
+  | 'ar'
+  | 'am'
+  | 'bn'
+  | 'zh-CN'
+  | 'zh-TW'
+  | 'cs'
+  | 'prs'
+  | 'fa'
+  | 'hi'
+  | 'ps'
+  | 'pt'
+  | 'pa'
+  | 'ru'
+  | 'so'
+  | 'es'
+  | 'tl'
+  | 'ta'
+  | 'ti'
+  | 'tr'
+  | 'uk'
+  | 'ur'
+  | 'vi';
 
-export interface LocalizedTitles {
-  en: string;
-  cs: string;
-  es: string;
+export type LocalizedTitles = Record<LanguageCode, string>;
+
+export const SUPPORTED_LANGUAGES: LanguageCode[] = [
+  'en',
+  'ar',
+  'am',
+  'bn',
+  'zh-CN',
+  'zh-TW',
+  'cs',
+  'prs',
+  'fa',
+  'hi',
+  'ps',
+  'pt',
+  'pa',
+  'ru',
+  'so',
+  'es',
+  'tl',
+  'ta',
+  'ti',
+  'tr',
+  'uk',
+  'ur',
+  'vi',
+];
+
+export const LANGUAGE_LABELS: Record<LanguageCode, string> = {
+  en: 'English',
+  ar: 'Arabic',
+  am: 'Amharic',
+  bn: 'Bengali - Bangla',
+  'zh-CN': 'Chinese (Simplified)',
+  'zh-TW': 'Chinese (Traditional)',
+  cs: 'Czech',
+  prs: 'Dari',
+  fa: 'Farsi',
+  hi: 'Hindi',
+  ps: 'Pashto',
+  pt: 'Portuguese',
+  pa: 'Punjabi',
+  ru: 'Russian',
+  so: 'Somali',
+  es: 'Spanish',
+  tl: 'Tagalog',
+  ta: 'Tamil',
+  ti: 'Tigrinya',
+  tr: 'Turkish',
+  uk: 'Ukrainian',
+  ur: 'Urdu',
+  vi: 'Vietnamese',
+};
+
+export function emptyLocalizedTitles(): LocalizedTitles {
+  return Object.fromEntries(SUPPORTED_LANGUAGES.map((l) => [l, ''])) as LocalizedTitles;
 }
 
 export interface ImageMeta {
@@ -32,8 +107,6 @@ export interface Topic {
   updatedAt?: Timestamp;
 }
 
-export const SUPPORTED_LANGUAGES: LanguageCode[] = ['en', 'cs', 'es'];
-
 export interface Grade {
   id: string;
   name: string;
@@ -51,7 +124,7 @@ export const GRADES: Grade[] = [
 
 export interface GradeSettings {
   id: string;
-  hardCoverPrintOut: string;
-  homeLanguagePrintOut: string;
+  hardCoverPrintOut: LocalizedTitles;
+  homeLanguagePrintOut: LocalizedTitles;
   updatedAt?: Timestamp;
 }

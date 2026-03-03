@@ -3,11 +3,20 @@ import { CommonModule } from '@angular/common';
 import { MATERIAL_IMPORTS } from '../shared/material.imports';
 import { TopicsService } from '../services/topics.service';
 import { GradeSettingsService } from '../services/grade-settings.service';
-import { Topic, ImageMeta, LanguageCode, GRADES } from '../shared/models';
+import {
+  Topic,
+  ImageMeta,
+  LanguageCode,
+  GRADES,
+  SUPPORTED_LANGUAGES,
+  LANGUAGE_LABELS,
+  LocalizedTitles,
+  emptyLocalizedTitles,
+} from '../shared/models';
 import { ActivatedRoute } from '@angular/router';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { MarkdownModule } from 'ngx-markdown';
-import { switchMap } from 'rxjs';
+import { switchMap, map } from 'rxjs';
 
 type PrintMode = 'topic' | 'hardCover' | 'homeLanguage';
 
@@ -39,9 +48,9 @@ type PrintMode = 'topic' | 'hardCover' | 'homeLanguage';
         <mat-form-field appearance="outline">
           <mat-label>Language</mat-label>
           <mat-select [(value)]="lang">
-            <mat-option value="en">English</mat-option>
-            <mat-option value="cs">Čeština</mat-option>
-            <mat-option value="es">Español</mat-option>
+            @for (l of langs; track l) {
+              <mat-option [value]="l">{{ languageLabel(l) }} ({{ l.toUpperCase() }})</mat-option>
+            }
           </mat-select>
         </mat-form-field>
 
@@ -57,7 +66,7 @@ type PrintMode = 'topic' | 'hardCover' | 'homeLanguage';
         <button
           mat-stroked-button
           (click)="printMode('hardCover')"
-          [disabled]="!gradeSettings()?.hardCoverPrintOut"
+          [disabled]="!gradeSettings()?.hardCoverPrintOut?.[lang]"
         >
           <mat-icon>print</mat-icon>
           Print Hard Cover
@@ -65,7 +74,7 @@ type PrintMode = 'topic' | 'hardCover' | 'homeLanguage';
         <button
           mat-stroked-button
           (click)="printMode('homeLanguage')"
-          [disabled]="!gradeSettings()?.homeLanguagePrintOut"
+          [disabled]="!gradeSettings()?.homeLanguagePrintOut?.[lang]"
         >
           <mat-icon>print</mat-icon>
           Print Home Language
@@ -74,17 +83,17 @@ type PrintMode = 'topic' | 'hardCover' | 'homeLanguage';
 
       @if (activePrintMode() !== 'topic' || !currentTopic()) {
         @if (gradeSettings(); as gs) {
-          @if (activePrintMode() !== 'homeLanguage' && gs.hardCoverPrintOut) {
+          @if (activePrintMode() !== 'homeLanguage' && gs.hardCoverPrintOut[lang]) {
             <div class="print-page grade-page">
               <div class="grade-content">
-                <markdown [data]="gs.hardCoverPrintOut"></markdown>
+                <markdown [data]="gs.hardCoverPrintOut[lang]"></markdown>
               </div>
             </div>
           }
-          @if (activePrintMode() !== 'hardCover' && gs.homeLanguagePrintOut) {
+          @if (activePrintMode() !== 'hardCover' && gs.homeLanguagePrintOut[lang]) {
             <div class="print-page grade-page">
               <div class="grade-content">
-                <markdown [data]="gs.homeLanguagePrintOut"></markdown>
+                <markdown [data]="gs.homeLanguagePrintOut[lang]"></markdown>
               </div>
             </div>
           }
@@ -298,6 +307,7 @@ export class PrintComponent {
   private readonly destroyRef = inject(DestroyRef);
 
   readonly grades = GRADES;
+  readonly langs: LanguageCode[] = SUPPORTED_LANGUAGES;
   readonly topicsList = signal<Topic[]>([]);
 
   selectedGradeId = signal(GRADES[0].id);
@@ -306,7 +316,18 @@ export class PrintComponent {
   lang: LanguageCode = 'en';
 
   readonly gradeSettings = toSignal(
-    toObservable(this.selectedGradeId).pipe(switchMap((id) => this.gradeSettingsService.get$(id))),
+    toObservable(this.selectedGradeId).pipe(
+      switchMap((id) => this.gradeSettingsService.get$(id)),
+      map((gs) =>
+        gs
+          ? {
+              ...gs,
+              hardCoverPrintOut: normalizeField(gs.hardCoverPrintOut),
+              homeLanguagePrintOut: normalizeField(gs.homeLanguagePrintOut),
+            }
+          : undefined,
+      ),
+    ),
   );
 
   readonly filteredTopics = computed(() => {
@@ -364,6 +385,10 @@ export class PrintComponent {
     return topic?.description?.[this.lang] ?? '';
   }
 
+  languageLabel(code: LanguageCode): string {
+    return LANGUAGE_LABELS[code] ?? code.toUpperCase();
+  }
+
   printMode(mode: PrintMode) {
     this.activePrintMode.set(mode);
     // Wait for Angular to re-render the visible pages before printing
@@ -371,4 +396,15 @@ export class PrintComponent {
       window.print();
     });
   }
+}
+
+/** Handle legacy plain-string values from Firestore (pre-migration). */
+function normalizeField(value: unknown): LocalizedTitles {
+  if (typeof value === 'string') {
+    return { ...emptyLocalizedTitles(), en: value };
+  }
+  if (value && typeof value === 'object') {
+    return value as LocalizedTitles;
+  }
+  return emptyLocalizedTitles();
 }
