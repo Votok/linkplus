@@ -137,3 +137,14 @@ export interface GradeSettings {
   homeLanguagePrintOut: LocalizedTitles;
   updatedAt?: Timestamp;
 }
+
+const GRADE_STORAGE_KEY = 'linkplus_selectedGradeId';
+
+export function saveGradeId(id: string): void {
+  localStorage.setItem(GRADE_STORAGE_KEY, id);
+}
+
+export function restoreGradeId(): string | null {
+  const id = localStorage.getItem(GRADE_STORAGE_KEY);
+  return id && GRADES.some((g) => g.id === id) ? id : null;
+}

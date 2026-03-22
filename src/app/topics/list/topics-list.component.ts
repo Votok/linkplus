@@ -1,9 +1,15 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MATERIAL_IMPORTS } from '../../shared/material.imports';
 import { TopicsService } from '../../services/topics.service';
-import { Topic, GRADES, emptyLocalizedTitles } from '../../shared/models';
+import {
+  Topic,
+  GRADES,
+  emptyLocalizedTitles,
+  restoreGradeId,
+  saveGradeId,
+} from '../../shared/models';
 import { toSignal, toObservable } from '@angular/core/rxjs-interop';
 import { LoadingService } from '../../services/loading.service';
 import { take, switchMap } from 'rxjs';
@@ -143,7 +149,11 @@ export class TopicsListComponent implements OnInit {
   private readonly loading = inject(LoadingService);
 
   readonly grades = GRADES;
-  readonly selectedGradeId = signal(GRADES[0].id);
+  readonly selectedGradeId = signal(restoreGradeId() ?? GRADES[0].id);
+
+  private readonly persistGrade = effect(() => {
+    saveGradeId(this.selectedGradeId());
+  });
 
   private readonly topics$ = toObservable(this.selectedGradeId).pipe(
     switchMap((gradeId) => this.topicsService.listByGrade$(gradeId)),

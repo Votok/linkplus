@@ -165,6 +165,23 @@ import { HasUnsavedChanges } from '../../auth/unsaved-changes.guard';
             <button mat-flat-button color="primary" [disabled]="form.pristine || saving">
               Save
             </button>
+            <span class="spacer"></span>
+            <a
+              mat-stroked-button
+              [routerLink]="['/grades', gradeId(), 'print']"
+              [queryParams]="{ mode: 'hardCover' }"
+            >
+              <mat-icon>print</mat-icon>
+              Print Hard Cover
+            </a>
+            <a
+              mat-stroked-button
+              [routerLink]="['/grades', gradeId(), 'print']"
+              [queryParams]="{ mode: 'homeLanguage' }"
+            >
+              <mat-icon>print</mat-icon>
+              Print Home Language
+            </a>
           </div>
         </form>
       </div>

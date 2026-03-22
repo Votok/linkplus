@@ -32,6 +32,11 @@ export const routes: Routes = [
         canDeactivate: [unsavedChangesGuard],
       },
       {
+        path: 'grades/:gradeId/print',
+        loadComponent: () =>
+          import('./grades/print/grade-print.component').then((m) => m.GradePrintComponent),
+      },
+      {
         path: 'print',
         loadComponent: () => import('./print/print.component').then((m) => m.PrintComponent),
       },
