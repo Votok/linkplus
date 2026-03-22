@@ -79,6 +79,14 @@ export const LANGUAGE_LABELS: Record<LanguageCode, string> = {
   vi: 'Vietnamese',
 };
 
+export const RTL_LANGUAGES: ReadonlySet<LanguageCode> = new Set<LanguageCode>([
+  'ar',
+  'fa',
+  'ps',
+  'prs',
+  'ur',
+]);
+
 export function emptyLocalizedTitles(): LocalizedTitles {
   return Object.fromEntries(SUPPORTED_LANGUAGES.map((l) => [l, ''])) as LocalizedTitles;
 }

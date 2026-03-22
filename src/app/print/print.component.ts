@@ -10,6 +10,7 @@ import {
   GRADES,
   SUPPORTED_LANGUAGES,
   LANGUAGE_LABELS,
+  RTL_LANGUAGES,
   LocalizedTitles,
   emptyLocalizedTitles,
 } from '../shared/models';
@@ -84,14 +85,14 @@ type PrintMode = 'topic' | 'hardCover' | 'homeLanguage';
       @if (activePrintMode() !== 'topic' || !currentTopic()) {
         @if (gradeSettings(); as gs) {
           @if (activePrintMode() !== 'homeLanguage' && gs.hardCoverPrintOut[lang]) {
-            <div class="print-page grade-page">
+            <div class="print-page grade-page" [dir]="textDir">
               <div class="grade-content">
                 <markdown [data]="gs.hardCoverPrintOut[lang]"></markdown>
               </div>
             </div>
           }
           @if (activePrintMode() !== 'hardCover' && gs.homeLanguagePrintOut[lang]) {
-            <div class="print-page grade-page">
+            <div class="print-page grade-page" [dir]="textDir">
               <div class="grade-content">
                 <markdown [data]="gs.homeLanguagePrintOut[lang]"></markdown>
               </div>
@@ -101,14 +102,14 @@ type PrintMode = 'topic' | 'hardCover' | 'homeLanguage';
       }
 
       @if (activePrintMode() === 'topic' && currentTopic(); as topic) {
-        <div class="print-page cover-page">
+        <div class="print-page cover-page" [dir]="textDir">
           <h1 class="cover-title">{{ topic.name[lang] }}</h1>
           <div class="cover-description">
             <markdown [data]="getDescription()"></markdown>
           </div>
         </div>
 
-        <div class="print-page images-page">
+        <div class="print-page images-page" [dir]="textDir">
           <h2 class="images-title">{{ topic.name[lang] }}</h2>
           <div class="images">
             @for (img of topic.images; track img.id) {
@@ -314,6 +315,10 @@ export class PrintComponent {
   selectedTopicId = signal<string | null>(null);
   activePrintMode = signal<PrintMode>('topic');
   lang: LanguageCode = 'en';
+
+  get textDir(): 'rtl' | 'ltr' {
+    return RTL_LANGUAGES.has(this.lang) ? 'rtl' : 'ltr';
+  }
 
   readonly gradeSettings = toSignal(
     toObservable(this.selectedGradeId).pipe(

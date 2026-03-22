@@ -21,6 +21,7 @@ import {
   SUPPORTED_LANGUAGES,
   LANGUAGE_LABELS,
   GRADES,
+  RTL_LANGUAGES,
   emptyLocalizedTitles,
 } from '../../shared/models';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -86,7 +87,7 @@ import { HasUnsavedChanges } from '../../auth/unsaved-changes.guard';
               <div class="field-with-hint" style="flex:1">
                 <mat-form-field appearance="outline">
                   <mat-label>Topic name</mat-label>
-                  <input matInput formControlName="name" />
+                  <input matInput formControlName="name" [dir]="textDir()" />
                   <mat-error *ngIf="form.controls.name.invalid">Name is required</mat-error>
                 </mat-form-field>
                 @if (selectedLang() !== 'en' && topic()?.name?.en) {
@@ -100,7 +101,12 @@ import { HasUnsavedChanges } from '../../auth/unsaved-changes.guard';
             <div class="field-with-hint">
               <mat-form-field appearance="outline" class="full">
                 <mat-label>Description (Markdown)</mat-label>
-                <textarea matInput formControlName="description" rows="8"></textarea>
+                <textarea
+                  matInput
+                  formControlName="description"
+                  rows="8"
+                  [dir]="textDir()"
+                ></textarea>
               </mat-form-field>
               @if (selectedLang() !== 'en' && topic()?.description?.en) {
                 <span
@@ -112,7 +118,7 @@ import { HasUnsavedChanges } from '../../auth/unsaved-changes.guard';
               }
             </div>
 
-            <div class="preview">
+            <div class="preview" [dir]="textDir()">
               <h3>Markdown preview</h3>
               <markdown [data]="form.controls.description.value || ''"></markdown>
             </div>
@@ -434,6 +440,7 @@ export class TopicEditorComponent implements OnInit, HasUnsavedChanges {
 
   readonly langs: LanguageCode[] = SUPPORTED_LANGUAGES;
   readonly selectedLang = signal<LanguageCode>('en');
+  readonly textDir = computed(() => (RTL_LANGUAGES.has(this.selectedLang()) ? 'rtl' : 'ltr'));
 
   readonly form = this.fb.nonNullable.group({
     order: [0, [Validators.required, Validators.min(0)]],
