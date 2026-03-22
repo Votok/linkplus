@@ -67,7 +67,10 @@ type PrintMode = 'topic' | 'hardCover' | 'homeLanguage';
         <button
           mat-stroked-button
           (click)="printMode('hardCover')"
-          [disabled]="!gradeSettings()?.hardCoverPrintOut?.[lang] && !gradeSettings()?.hardCoverPrintOutPage2?.[lang]"
+          [disabled]="
+            !gradeSettings()?.hardCoverPrintOut?.[lang] &&
+            !gradeSettings()?.hardCoverPrintOutPage2?.[lang]
+          "
         >
           <mat-icon>print</mat-icon>
           Print Hard Cover

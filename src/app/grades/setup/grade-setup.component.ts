@@ -79,7 +79,12 @@ import { HasUnsavedChanges } from '../../auth/unsaved-changes.guard';
                 <div class="field-with-hint">
                   <mat-form-field appearance="outline" class="full">
                     <mat-label>Hard Cover Page 1 (Markdown)</mat-label>
-                    <textarea matInput formControlName="hardCoverPrintOut" rows="10" [dir]="textDir()"></textarea>
+                    <textarea
+                      matInput
+                      formControlName="hardCoverPrintOut"
+                      rows="10"
+                      [dir]="textDir()"
+                    ></textarea>
                   </mat-form-field>
                   @if (selectedLang() !== 'en' && currentSettings()?.hardCoverPrintOut?.en) {
                     <span
@@ -103,7 +108,12 @@ import { HasUnsavedChanges } from '../../auth/unsaved-changes.guard';
                 <div class="field-with-hint">
                   <mat-form-field appearance="outline" class="full">
                     <mat-label>Hard Cover Page 2 (Markdown)</mat-label>
-                    <textarea matInput formControlName="hardCoverPrintOutPage2" rows="10" [dir]="textDir()"></textarea>
+                    <textarea
+                      matInput
+                      formControlName="hardCoverPrintOutPage2"
+                      rows="10"
+                      [dir]="textDir()"
+                    ></textarea>
                   </mat-form-field>
                   @if (selectedLang() !== 'en' && currentSettings()?.hardCoverPrintOutPage2?.en) {
                     <span
@@ -127,7 +137,12 @@ import { HasUnsavedChanges } from '../../auth/unsaved-changes.guard';
                 <div class="field-with-hint">
                   <mat-form-field appearance="outline" class="full">
                     <mat-label>Home Language Print-Out (Markdown)</mat-label>
-                    <textarea matInput formControlName="homeLanguagePrintOut" rows="10" [dir]="textDir()"></textarea>
+                    <textarea
+                      matInput
+                      formControlName="homeLanguagePrintOut"
+                      rows="10"
+                      [dir]="textDir()"
+                    ></textarea>
                   </mat-form-field>
                   @if (selectedLang() !== 'en' && currentSettings()?.homeLanguagePrintOut?.en) {
                     <span
@@ -374,7 +389,11 @@ export class GradeSetupComponent implements OnInit, HasUnsavedChanges {
         ...(current?.homeLanguagePrintOut ?? emptyLocalizedTitles()),
         [lang]: formValue.homeLanguagePrintOut,
       };
-      await this.gradeSettings.save(gradeId, { hardCoverPrintOut, hardCoverPrintOutPage2, homeLanguagePrintOut });
+      await this.gradeSettings.save(gradeId, {
+        hardCoverPrintOut,
+        hardCoverPrintOutPage2,
+        homeLanguagePrintOut,
+      });
       this.form.markAsPristine();
       this.snack.open('Grade settings saved', 'OK', { duration: 1500 });
     } catch {
