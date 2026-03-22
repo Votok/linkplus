@@ -133,6 +133,7 @@ export const GRADES: Grade[] = [
 export interface GradeSettings {
   id: string;
   hardCoverPrintOut: LocalizedTitles;
+  hardCoverPrintOutPage2: LocalizedTitles;
   homeLanguagePrintOut: LocalizedTitles;
   updatedAt?: Timestamp;
 }

@@ -19,7 +19,7 @@ export class GradeSettingsService {
 
   async save(
     gradeId: string,
-    data: Pick<GradeSettings, 'hardCoverPrintOut' | 'homeLanguagePrintOut'>,
+    data: Pick<GradeSettings, 'hardCoverPrintOut' | 'hardCoverPrintOutPage2' | 'homeLanguagePrintOut'>,
   ): Promise<void> {
     this.loading.begin();
     try {

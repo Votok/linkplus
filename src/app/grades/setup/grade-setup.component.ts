@@ -18,6 +18,7 @@ import {
   GradeSettings,
   LanguageCode,
   LocalizedTitles,
+  RTL_LANGUAGES,
   SUPPORTED_LANGUAGES,
   LANGUAGE_LABELS,
   emptyLocalizedTitles,
@@ -71,53 +72,79 @@ import { HasUnsavedChanges } from '../../auth/unsaved-changes.guard';
         </div>
 
         <form [formGroup]="form" class="form" (ngSubmit)="onSave()">
-          <section>
-            <h3>Hard Cover Print-Out</h3>
-            <p class="hint">This will be the cover page for the folder.</p>
-            <div class="field-with-hint">
-              <mat-form-field appearance="outline" class="full">
-                <mat-label>Hard Cover Print-Out (Markdown)</mat-label>
-                <textarea matInput formControlName="hardCoverPrintOut" rows="10"></textarea>
-              </mat-form-field>
-              @if (selectedLang() !== 'en' && currentSettings()?.hardCoverPrintOut?.en) {
-                <span
-                  class="en-badge"
-                  [matTooltip]="currentSettings()!.hardCoverPrintOut.en"
-                  matTooltipPosition="above"
-                  >EN</span
-                >
-              }
-            </div>
-            <div class="preview">
-              <h4>Preview</h4>
-              <markdown [data]="form.controls.hardCoverPrintOut.value || ''"></markdown>
-            </div>
-          </section>
+          <mat-tab-group animationDuration="200ms">
+            <mat-tab label="Hard Cover – Page 1">
+              <div class="tab-content">
+                <p class="hint">First page of the hard cover for the folder.</p>
+                <div class="field-with-hint">
+                  <mat-form-field appearance="outline" class="full">
+                    <mat-label>Hard Cover Page 1 (Markdown)</mat-label>
+                    <textarea matInput formControlName="hardCoverPrintOut" rows="10" [dir]="textDir()"></textarea>
+                  </mat-form-field>
+                  @if (selectedLang() !== 'en' && currentSettings()?.hardCoverPrintOut?.en) {
+                    <span
+                      class="en-badge"
+                      [matTooltip]="currentSettings()!.hardCoverPrintOut.en"
+                      matTooltipPosition="above"
+                      >EN</span
+                    >
+                  }
+                </div>
+                <div class="preview" [dir]="textDir()">
+                  <h4>Preview</h4>
+                  <markdown [data]="form.controls.hardCoverPrintOut.value || ''"></markdown>
+                </div>
+              </div>
+            </mat-tab>
 
-          <mat-divider />
+            <mat-tab label="Hard Cover – Page 2">
+              <div class="tab-content">
+                <p class="hint">Second page of the hard cover for the folder.</p>
+                <div class="field-with-hint">
+                  <mat-form-field appearance="outline" class="full">
+                    <mat-label>Hard Cover Page 2 (Markdown)</mat-label>
+                    <textarea matInput formControlName="hardCoverPrintOutPage2" rows="10" [dir]="textDir()"></textarea>
+                  </mat-form-field>
+                  @if (selectedLang() !== 'en' && currentSettings()?.hardCoverPrintOutPage2?.en) {
+                    <span
+                      class="en-badge"
+                      [matTooltip]="currentSettings()!.hardCoverPrintOutPage2.en"
+                      matTooltipPosition="above"
+                      >EN</span
+                    >
+                  }
+                </div>
+                <div class="preview" [dir]="textDir()">
+                  <h4>Preview</h4>
+                  <markdown [data]="form.controls.hardCoverPrintOutPage2.value || ''"></markdown>
+                </div>
+              </div>
+            </mat-tab>
 
-          <section>
-            <h3>Home Language Print-Out</h3>
-            <p class="hint">This will be the first page inside the folder.</p>
-            <div class="field-with-hint">
-              <mat-form-field appearance="outline" class="full">
-                <mat-label>Home Language Print-Out (Markdown)</mat-label>
-                <textarea matInput formControlName="homeLanguagePrintOut" rows="10"></textarea>
-              </mat-form-field>
-              @if (selectedLang() !== 'en' && currentSettings()?.homeLanguagePrintOut?.en) {
-                <span
-                  class="en-badge"
-                  [matTooltip]="currentSettings()!.homeLanguagePrintOut.en"
-                  matTooltipPosition="above"
-                  >EN</span
-                >
-              }
-            </div>
-            <div class="preview">
-              <h4>Preview</h4>
-              <markdown [data]="form.controls.homeLanguagePrintOut.value || ''"></markdown>
-            </div>
-          </section>
+            <mat-tab label="Home Language">
+              <div class="tab-content">
+                <p class="hint">This will be the first page inside the folder.</p>
+                <div class="field-with-hint">
+                  <mat-form-field appearance="outline" class="full">
+                    <mat-label>Home Language Print-Out (Markdown)</mat-label>
+                    <textarea matInput formControlName="homeLanguagePrintOut" rows="10" [dir]="textDir()"></textarea>
+                  </mat-form-field>
+                  @if (selectedLang() !== 'en' && currentSettings()?.homeLanguagePrintOut?.en) {
+                    <span
+                      class="en-badge"
+                      [matTooltip]="currentSettings()!.homeLanguagePrintOut.en"
+                      matTooltipPosition="above"
+                      >EN</span
+                    >
+                  }
+                </div>
+                <div class="preview" [dir]="textDir()">
+                  <h4>Preview</h4>
+                  <markdown [data]="form.controls.homeLanguagePrintOut.value || ''"></markdown>
+                </div>
+              </div>
+            </mat-tab>
+          </mat-tab-group>
 
           <div class="actions">
             <button mat-flat-button color="primary" [disabled]="form.pristine || saving">
@@ -156,14 +183,12 @@ import { HasUnsavedChanges } from '../../auth/unsaved-changes.guard';
       .form {
         display: grid;
         grid-template-columns: 1fr;
-        gap: 24px;
+        gap: 16px;
       }
-      section {
+      .tab-content {
         display: grid;
         gap: 12px;
-      }
-      section h3 {
-        margin: 0;
+        padding-top: 16px;
       }
       .hint {
         margin: 0;
@@ -245,12 +270,14 @@ export class GradeSetupComponent implements OnInit, HasUnsavedChanges {
 
   readonly langs: LanguageCode[] = SUPPORTED_LANGUAGES;
   readonly selectedLang = signal<LanguageCode>('en');
+  readonly textDir = computed(() => (RTL_LANGUAGES.has(this.selectedLang()) ? 'rtl' : 'ltr'));
   readonly currentSettings = signal<GradeSettings | null>(null);
 
   saving = false;
 
   readonly form = this.fb.nonNullable.group({
     hardCoverPrintOut: [''],
+    hardCoverPrintOutPage2: [''],
     homeLanguagePrintOut: [''],
   });
 
@@ -261,6 +288,7 @@ export class GradeSetupComponent implements OnInit, HasUnsavedChanges {
       this.form.patchValue(
         {
           hardCoverPrintOut: settings.hardCoverPrintOut?.[lang] ?? '',
+          hardCoverPrintOutPage2: settings.hardCoverPrintOutPage2?.[lang] ?? '',
           homeLanguagePrintOut: settings.homeLanguagePrintOut?.[lang] ?? '',
         },
         { emitEvent: false },
@@ -303,6 +331,7 @@ export class GradeSetupComponent implements OnInit, HasUnsavedChanges {
           const normalized: GradeSettings = {
             ...settings,
             hardCoverPrintOut: this.normalizeField(settings.hardCoverPrintOut),
+            hardCoverPrintOutPage2: this.normalizeField(settings.hardCoverPrintOutPage2),
             homeLanguagePrintOut: this.normalizeField(settings.homeLanguagePrintOut),
           };
           this.currentSettings.set(normalized);
@@ -310,6 +339,7 @@ export class GradeSetupComponent implements OnInit, HasUnsavedChanges {
           this.form.patchValue(
             {
               hardCoverPrintOut: normalized.hardCoverPrintOut[lang] ?? '',
+              hardCoverPrintOutPage2: normalized.hardCoverPrintOutPage2[lang] ?? '',
               homeLanguagePrintOut: normalized.homeLanguagePrintOut[lang] ?? '',
             },
             { emitEvent: false },
@@ -336,11 +366,15 @@ export class GradeSetupComponent implements OnInit, HasUnsavedChanges {
         ...(current?.hardCoverPrintOut ?? emptyLocalizedTitles()),
         [lang]: formValue.hardCoverPrintOut,
       };
+      const hardCoverPrintOutPage2 = {
+        ...(current?.hardCoverPrintOutPage2 ?? emptyLocalizedTitles()),
+        [lang]: formValue.hardCoverPrintOutPage2,
+      };
       const homeLanguagePrintOut = {
         ...(current?.homeLanguagePrintOut ?? emptyLocalizedTitles()),
         [lang]: formValue.homeLanguagePrintOut,
       };
-      await this.gradeSettings.save(gradeId, { hardCoverPrintOut, homeLanguagePrintOut });
+      await this.gradeSettings.save(gradeId, { hardCoverPrintOut, hardCoverPrintOutPage2, homeLanguagePrintOut });
       this.form.markAsPristine();
       this.snack.open('Grade settings saved', 'OK', { duration: 1500 });
     } catch {

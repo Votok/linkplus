@@ -67,7 +67,7 @@ type PrintMode = 'topic' | 'hardCover' | 'homeLanguage';
         <button
           mat-stroked-button
           (click)="printMode('hardCover')"
-          [disabled]="!gradeSettings()?.hardCoverPrintOut?.[lang]"
+          [disabled]="!gradeSettings()?.hardCoverPrintOut?.[lang] && !gradeSettings()?.hardCoverPrintOutPage2?.[lang]"
         >
           <mat-icon>print</mat-icon>
           Print Hard Cover
@@ -88,6 +88,13 @@ type PrintMode = 'topic' | 'hardCover' | 'homeLanguage';
             <div class="print-page grade-page" [dir]="textDir">
               <div class="grade-content">
                 <markdown [data]="gs.hardCoverPrintOut[lang]"></markdown>
+              </div>
+            </div>
+          }
+          @if (activePrintMode() !== 'homeLanguage' && gs.hardCoverPrintOutPage2[lang]) {
+            <div class="print-page grade-page" [dir]="textDir">
+              <div class="grade-content">
+                <markdown [data]="gs.hardCoverPrintOutPage2[lang]"></markdown>
               </div>
             </div>
           }
@@ -328,6 +335,7 @@ export class PrintComponent {
           ? {
               ...gs,
               hardCoverPrintOut: normalizeField(gs.hardCoverPrintOut),
+              hardCoverPrintOutPage2: normalizeField(gs.hardCoverPrintOutPage2),
               homeLanguagePrintOut: normalizeField(gs.homeLanguagePrintOut),
             }
           : undefined,
