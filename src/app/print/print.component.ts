@@ -118,11 +118,19 @@ import { MarkdownModule } from 'ngx-markdown';
         max-width: 100%;
         font-size: 12pt;
         line-height: 1.6;
+        text-align: center;
       }
       /* Images page */
       .images-title {
         text-align: center;
         margin-bottom: 8mm;
+      }
+      [dir='rtl'].cover-page {
+        align-items: flex-start;
+      }
+      [dir='rtl'] .cover-title,
+      [dir='rtl'] .images-title {
+        text-align: right;
       }
       .images {
         display: grid;
@@ -165,7 +173,7 @@ import { MarkdownModule } from 'ngx-markdown';
           min-height: calc(100vh - 20mm);
         }
         .cover-title {
-          font-size: 24pt;
+          font-size: 25pt;
         }
         .cover-description {
           font-size: 12pt;

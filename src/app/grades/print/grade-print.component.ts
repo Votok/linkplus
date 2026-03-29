@@ -113,12 +113,13 @@ type GradePrintMode = 'hardCover' | 'homeLanguage';
         display: flex;
         flex-direction: column;
         align-items: center;
-        justify-content: center;
+        justify-content: flex-start;
       }
       .grade-content {
         max-width: 100%;
         font-size: 12pt;
         line-height: 1.6;
+        text-align: center;
       }
 
       @media print {
