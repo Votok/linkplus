@@ -68,7 +68,7 @@ type GradePrintMode = 'hardCover' | 'homeLanguage';
       }
 
       @if (mode === 'homeLanguage' && homeLanguage()[lang]) {
-        <div class="print-page grade-page" [dir]="textDir">
+        <div class="print-page grade-page home-language-page" [dir]="textDir">
           <div class="grade-content">
             <markdown [data]="homeLanguage()[lang]"></markdown>
           </div>
@@ -120,6 +120,12 @@ type GradePrintMode = 'hardCover' | 'homeLanguage';
         font-size: 12pt;
         line-height: 1.6;
         text-align: center;
+      }
+      .home-language-page .grade-content {
+        text-align: left;
+      }
+      [dir='rtl'].home-language-page .grade-content {
+        text-align: right;
       }
 
       @media print {

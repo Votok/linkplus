@@ -106,30 +106,30 @@ import { MarkdownModule } from 'ngx-markdown';
       .cover-page {
         display: flex;
         flex-direction: column;
-        align-items: center;
+        align-items: stretch;
         justify-content: center;
       }
       .cover-title {
         font-size: 24pt;
-        text-align: center;
+        text-align: left;
         margin-bottom: 12mm;
       }
       .cover-description {
         max-width: 100%;
         font-size: 12pt;
         line-height: 1.6;
-        text-align: center;
+        text-align: left;
       }
       /* Images page */
       .images-title {
-        text-align: center;
+        text-align: left;
         margin-bottom: 8mm;
-      }
-      [dir='rtl'].cover-page {
-        align-items: flex-start;
       }
       [dir='rtl'] .cover-title,
       [dir='rtl'] .images-title {
+        text-align: right;
+      }
+      [dir='rtl'] .cover-description {
         text-align: right;
       }
       .images {
@@ -217,6 +217,10 @@ import { MarkdownModule } from 'ngx-markdown';
         /* Single vertical divider between the two columns */
         .images-page .images > .img:nth-child(2n) {
           border-left: 0.2mm solid #000;
+        }
+        [dir='rtl'].images-page .images > .img:nth-child(2n) {
+          border-left: none;
+          border-right: 0.2mm solid #000;
         }
         /* Horizontal dividers between rows 1-2, 2-3, 3-4 */
         .images-page .images > .img:not(:nth-child(-n + 2)) {
